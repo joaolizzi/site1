@@ -7,7 +7,7 @@ import { loginAnonymously } from "./firebase";
 
 export default function App() {
   useEffect(() => {
-    loginAnonymously(); // Faz login anônimo ao iniciar
+    // loginAnonymously(); // Temporariamente desabilitado devido a problemas de API key
   }, []);
 
   return (
@@ -22,16 +22,5 @@ export default function App() {
         </div>
       </div>
     </Router>
-  );
-}
-import React from "react";
-import CandidateForm from "./components/CandidateForm";
-
-export default function App() {
-  return (
-    <div style={{ padding: "20px", fontFamily: "sans-serif" }}>
-      <h1>Sistema de Entrevistas v2</h1>
-      <CandidateForm />
-    </div>
   );
 }
