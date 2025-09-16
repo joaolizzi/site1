@@ -1,26 +1,20 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Header from "./components/Header";
 import CandidateForm from "./components/CandidateForm";
 import AdminLogin from "./components/AdminLogin";
 import AdminPanel from "./components/AdminPanel";
-import { loginAnonymously } from "./firebase";
+import "./styles.css";
 
 export default function App() {
-  useEffect(() => {
-    // loginAnonymously(); // Temporariamente desabilitado devido a problemas de API key
-  }, []);
-
   return (
     <Router>
-      <div style={{ fontFamily: "system-ui, sans-serif", padding: 20, background: "#f3f4f6", minHeight: "100vh" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <Routes>
-            <Route path="/" element={<CandidateForm />} />
-            <Route path="/admin" element={<AdminLogin />} />
-            <Route path="/admin/panel" element={<AdminPanel />} />
-          </Routes>
-        </div>
-      </div>
+      <Header />
+      <Routes>
+        <Route path="/" element={<CandidateForm />} />
+        <Route path="/admin" element={<AdminLogin />} />
+        <Route path="/admin/panel" element={<AdminPanel />} />
+      </Routes>
     </Router>
   );
 }

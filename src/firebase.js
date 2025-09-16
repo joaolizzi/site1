@@ -1,24 +1,15 @@
 import { initializeApp, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth, signInAnonymously } from "firebase/auth";
-import { getStorage } from "firebase/storage"; // <-- ADICIONE ISSO
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBfADQYaRc8EQFppGQnVNpD6XBai50totE",
-  authDomain: "meuprojeto-257f0.firebaseapp.com",
-  projectId: "meuprojeto-257f0",
-  storageBucket: "meuprojeto-257f0.firebasestorage.app",
-  messagingSenderId: "710773486236",
-  appId: "1:710773486236:web:de6516c37c1709140bf359",
-  measurementId: "G-Z8M0Q3M4RB"
-};
+import { getStorage } from "firebase/storage";
+import { firebaseConfig } from "./config";
 
 // Inicializa Firebase (evita duplicação)
 let app;
 try {
-  app = getApp(); // Tenta pegar a instância existente
+  app = getApp(); // pega a instância existente
 } catch (error) {
-  // Se não existe, inicializa uma nova
+  // se não existe, inicializa uma nova
   app = initializeApp(firebaseConfig);
 }
 

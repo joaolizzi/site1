@@ -1,0 +1,19 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Regras para upload de documentos de candidatos
+    match /candidates/{candidateId}/{allPaths=**} {
+      allow read, write: if true;
+    }
+    
+    // Regras para backup de arquivos
+    match /backup/{allPaths=**} {
+      allow read, write: if true;
+    }
+    
+    // Regras para logs e auditoria
+    match /logs/{allPaths=**} {
+      allow read, write: if true;
+    }
+  }
+}

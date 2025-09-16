@@ -1,15 +1,48 @@
 {
   "indexes": [
     {
-      "collectionGroup": "applications",
+      "collectionGroup": "candidates",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ],
+      "density": "SPARSE_ALL"
+    },
+    {
+      "collectionGroup": "candidates",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ],
+      "density": "SPARSE_ALL"
+    },
+    {
+      "collectionGroup": "candidates",
       "queryScope": "COLLECTION",
       "fields": [
         {
           "fieldPath": "cpf",
           "order": "ASCENDING"
-        },
+        }
+      ],
+      "density": "SPARSE_ALL"
+    },
+    {
+      "collectionGroup": "candidates",
+      "queryScope": "COLLECTION",
+      "fields": [
         {
-          "fieldPath": "fullName",
+          "fieldPath": "nome",
           "order": "ASCENDING"
         }
       ],

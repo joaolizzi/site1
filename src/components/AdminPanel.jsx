@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { db } from '../firebase';
-import { collection, query, orderBy, onSnapshot, updateDoc, doc } from 'firebase/firestore';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useCandidates } from '../hooks/useCandidates';
+import { useAuth } from '../hooks/useAuth';
+import SyncStatus from './SyncStatus';
+import ConfirmModal from './ConfirmModal';
 
 function downloadCSV(rows) {
   if (!rows.length) return;
@@ -20,98 +22,291 @@ function downloadCSV(rows) {
 }
 
 export default function AdminPanel() {
-  const [candidates, setCandidates] = useState([]);
+  const { candidates, loading, updateCandidateStatus, deleteCandidate } = useCandidates();
+  const { requireAuth, logout } = useAuth();
   const [filter, setFilter] = useState('All');
   const [search, setSearch] = useState('');
   const [previewImg, setPreviewImg] = useState(null);
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, candidate: null });
   const navigate = useNavigate();
 
-  useEffect(()=> {
-    const authed = sessionStorage.getItem('admin_authenticated') === 'true';
-    if (!authed) navigate('/admin');
-  }, [navigate]);
+  useEffect(() => {
+    requireAuth();
+  }, [requireAuth]);
 
-  useEffect(()=> {
-    const q = query(collection(db, 'candidates'), orderBy('createdAt', 'desc'));
-    const unsub = onSnapshot(q, snap => {
-      setCandidates(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+  // Memoizar filtros para performance
+  const filteredCandidates = useMemo(() => {
+    return candidates.filter(c => {
+      if (filter !== 'All' && c.status !== filter) return false;
+      if (!search) return true;
+      const s = search.toLowerCase();
+      return (c.nome && c.nome.toLowerCase().includes(s)) || (c.cpf && c.cpf.toLowerCase().includes(s));
     });
-    return () => unsub();
-  }, []);
+  }, [candidates, filter, search]);
 
-  async function setStatus(id, status) {
-    await updateDoc(doc(db, 'candidates', id), { status });
+  const handleStatusChange = async (candidateId, status) => {
+    await updateCandidateStatus(candidateId, status);
+  };
+
+  const handleDeleteClick = (candidate) => {
+    setDeleteModal({ isOpen: true, candidate });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (deleteModal.candidate) {
+      await deleteCandidate(deleteModal.candidate.id);
+      setDeleteModal({ isOpen: false, candidate: null });
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteModal({ isOpen: false, candidate: null });
+  };
+
+  if (loading) {
+    return (
+      <div className="admin-panel">
+        <div className="loading">Carregando painel administrativo...</div>
+      </div>
+    );
   }
 
-  const filtered = candidates.filter(c => {
-    if (filter !== 'All' && c.status !== filter) return false;
-    if (!search) return true;
-    const s = search.toLowerCase();
-    return (c.fullName && c.fullName.toLowerCase().includes(s)) || (c.cpf && c.cpf.toLowerCase().includes(s));
-  });
-
   return (
-    <div>
-      <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12}}>
-        <h1>Painel Admin</h1>
-        <div>
-          <button onClick={()=>{ sessionStorage.removeItem('admin_authenticated'); navigate('/'); }} style={{marginRight:8}}>Sair</button>
-          <Link to='/'>Voltar ao formulário</Link>
+    <div className="admin-panel">
+      <div className="admin-header">
+        <h1>Painel Administrativo</h1>
+        <div className="admin-actions">
+          <SyncStatus />
+          <button onClick={logout} className="logout-button">
+            Sair
+          </button>
+          <Link to='/' className="back-link">
+            Voltar ao formulário
+          </Link>
         </div>
       </div>
 
-      <div style={{display:'flex', gap:8, marginBottom:12}}>
-        <select value={filter} onChange={e=>setFilter(e.target.value)}>
-          <option value='All'>Todos</option>
-          <option value='Backlog'>Backlog</option>
-          <option value='Aprovado'>Aprovado</option>
-          <option value='Rejeitado'>Rejeitado</option>
-        </select>
-        <input placeholder='Buscar por nome ou CPF' value={search} onChange={e=>setSearch(e.target.value)} style={{flex:1}} />
-        <button onClick={()=> downloadCSV(filtered)}>Exportar CSV (visíveis)</button>
+      <div className="admin-controls">
+        <div className="filter-group">
+          <label htmlFor="status-filter">Filtrar por status:</label>
+          <select 
+            id="status-filter"
+            value={filter} 
+            onChange={e => setFilter(e.target.value)}
+            aria-label="Filtrar candidatos por status"
+          >
+            <option value='All'>Todos</option>
+            <option value='Backlog'>Backlog</option>
+            <option value='Aprovado'>Aprovado</option>
+            <option value='Rejeitado'>Rejeitado</option>
+          </select>
+        </div>
+        
+        <div className="search-group">
+          <label htmlFor="search-input">Buscar:</label>
+          <input 
+            id="search-input"
+            type="text"
+            placeholder='Buscar por nome ou CPF' 
+            value={search} 
+            onChange={e => setSearch(e.target.value)}
+            aria-label="Buscar candidatos"
+          />
+        </div>
+        
+        <button 
+          onClick={() => downloadCSV(filteredCandidates)}
+          className="export-button"
+          disabled={filteredCandidates.length === 0}
+        >
+          Exportar CSV ({filteredCandidates.length})
+        </button>
       </div>
 
-      <table style={{width:'100%', borderCollapse:'collapse', background:'#fff'}}>
-        <thead>
-          <tr style={{textAlign:'left', borderBottom:'1px solid #eee'}}>
-            <th style={{padding:8}}>Nome</th>
-            <th>CPF</th>
-            <th>Idade</th>
-            <th>Status</th>
-            <th>Documentos</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filtered.map(c => (
-            <tr key={c.id} style={{borderBottom:'1px solid #f0f0f0'}}>
-              <td style={{padding:8}}>{c.fullName}</td>
-              <td>{c.cpf}</td>
-              <td>{c.age}</td>
-              <td>{c.status}</td>
-              <td>
-                <div style={{display:'flex', gap:6}}>
-                  {c.cpfImg && <img src={c.cpfImg} alt='cpf' style={{height:50, cursor:'pointer'}} onClick={()=>setPreviewImg(c.cpfImg)} />}
-                  {c.rgImg && <img src={c.rgImg} alt='rg' style={{height:50, cursor:'pointer'}} onClick={()=>setPreviewImg(c.rgImg)} />}
-                  {c.pisImg && <img src={c.pisImg} alt='pis' style={{height:50, cursor:'pointer'}} onClick={()=>setPreviewImg(c.pisImg)} />}
-                </div>
-              </td>
-              <td>
-                <div style={{display:'flex', gap:6}}>
-                  <button onClick={()=>setStatus(c.id, 'Aprovado')}>Aprovar</button>
-                  <button onClick={()=>setStatus(c.id, 'Rejeitado')}>Rejeitar</button>
-                </div>
-              </td>
+      <div className="table-container">
+        <table className="candidates-table">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>CPF</th>
+              <th>Idade</th>
+              <th>Telefone</th>
+              <th>Status</th>
+              <th>Documentos</th>
+              <th>Ações</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filteredCandidates.map(c => (
+              <tr key={c.id}>
+                <td className="candidate-name">{c.nome}</td>
+                <td>{c.cpf}</td>
+                <td>{c.idade} anos</td>
+                <td>{c.telefone}</td>
+                <td>
+                  <span className={`status status-${c.status?.toLowerCase() || 'backlog'}`}>
+                    {c.status || 'Backlog'}
+                  </span>
+                </td>
+                <td>
+                  <div className="documents">
+                    {c.cpfImgUrl && (
+                      <img 
+                        src={c.cpfImgUrl} 
+                        alt='CPF' 
+                        className="document-thumb"
+                        onClick={() => setPreviewImg(c.cpfImgUrl)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            setPreviewImg(c.cpfImgUrl);
+                          }
+                        }}
+                        title="CPF"
+                      />
+                    )}
+                    {c.pisImgUrl && (
+                      <img 
+                        src={c.pisImgUrl} 
+                        alt='PIS' 
+                        className="document-thumb"
+                        onClick={() => setPreviewImg(c.pisImgUrl)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            setPreviewImg(c.pisImgUrl);
+                          }
+                        }}
+                        title="PIS"
+                      />
+                    )}
+                    {c.rgFrenteImgUrl && (
+                      <img 
+                        src={c.rgFrenteImgUrl} 
+                        alt='RG Frente' 
+                        className="document-thumb"
+                        onClick={() => setPreviewImg(c.rgFrenteImgUrl)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            setPreviewImg(c.rgFrenteImgUrl);
+                          }
+                        }}
+                        title="RG Frente"
+                      />
+                    )}
+                    {c.rgVersoImgUrl && (
+                      <img 
+                        src={c.rgVersoImgUrl} 
+                        alt='RG Verso' 
+                        className="document-thumb"
+                        onClick={() => setPreviewImg(c.rgVersoImgUrl)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            setPreviewImg(c.rgVersoImgUrl);
+                          }
+                        }}
+                        title="RG Verso"
+                      />
+                    )}
+                    {c.enderecoImgUrl && (
+                      <img 
+                        src={c.enderecoImgUrl} 
+                        alt='Endereço' 
+                        className="document-thumb"
+                        onClick={() => setPreviewImg(c.enderecoImgUrl)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            setPreviewImg(c.enderecoImgUrl);
+                          }
+                        }}
+                        title="Comprovante de Endereço"
+                      />
+                    )}
+                  </div>
+                </td>
+                <td>
+                  <div className="action-buttons">
+                    <button 
+                      onClick={() => handleStatusChange(c.id, 'Aprovado')}
+                      className="approve-button"
+                      disabled={c.status === 'Aprovado'}
+                    >
+                      Aprovar
+                    </button>
+                    <button 
+                      onClick={() => handleStatusChange(c.id, 'Rejeitado')}
+                      className="reject-button"
+                      disabled={c.status === 'Rejeitado'}
+                    >
+                      Rejeitar
+                    </button>
+                    <button 
+                      onClick={() => handleDeleteClick(c)}
+                      className="delete-button"
+                      title="Deletar candidato"
+                    >
+                      Deletar
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        
+        {filteredCandidates.length === 0 && (
+          <div className="no-results">
+            {search || filter !== 'All' 
+              ? 'Nenhum candidato encontrado com os filtros aplicados.' 
+              : 'Nenhum candidato cadastrado ainda.'
+            }
+          </div>
+        )}
+      </div>
 
       {previewImg && (
-        <div style={{position:'fixed', inset:0, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(0,0,0,0.6)'}} onClick={()=>setPreviewImg(null)}>
-          <img src={previewImg} alt='preview' style={{maxHeight:'90%', maxWidth:'90%', borderRadius:8, boxShadow:'0 8px 24px rgba(0,0,0,0.5)'}} />
+        <div 
+          className="modal-overlay" 
+          onClick={() => setPreviewImg(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Visualizar documento"
+        >
+          <div className="modal-content">
+            <img 
+              src={previewImg} 
+              alt='Documento' 
+              className="preview-image"
+            />
+            <button 
+              className="close-modal"
+              onClick={() => setPreviewImg(null)}
+              aria-label="Fechar visualização"
+            >
+              ×
+            </button>
+          </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Confirmar Exclusão"
+        message={`Tem certeza que deseja deletar o candidato "${deleteModal.candidate?.nome}"? Esta ação não pode ser desfeita e todos os documentos serão removidos permanentemente.`}
+        confirmText="Deletar"
+        cancelText="Cancelar"
+        type="danger"
+      />
     </div>
   );
 }
