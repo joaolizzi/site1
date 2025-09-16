@@ -37,7 +37,7 @@ export default function CandidateForm() {
         if (!value) {
           newErrors.idade = 'Idade é obrigatória';
         } else if (isNaN(age) || age < 18 || age > 100) {
-          newErrors.idade = 'Idade deve ser entre 16 e 100 anos';
+          newErrors.idade = 'Idade deve ser entre 18 e 100 anos';
         } else {
           delete newErrors.idade;
         }
