@@ -36,7 +36,7 @@ export default function CandidateForm() {
         const age = parseInt(value);
         if (!value) {
           newErrors.idade = 'Idade é obrigatória';
-        } else if (isNaN(age) || age < 16 || age > 100) {
+        } else if (isNaN(age) || age < 18 || age > 100) {
           newErrors.idade = 'Idade deve ser entre 16 e 100 anos';
         } else {
           delete newErrors.idade;
