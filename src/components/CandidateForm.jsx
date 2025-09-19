@@ -9,14 +9,188 @@ export default function CandidateForm() {
     idade: "",
     telefone: "",
     cpf: "",
+    cidade: "",
     cpfImg: null,
     pisImg: null,
     rgFrenteImg: null,
     rgVersoImg: null,
-    enderecoImg: null
+    enderecoImg: null,
+    aceiteLGPD: false
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDetectingLocation, setIsDetectingLocation] = useState(false);
+
+  // Lista de cidades brasileiras principais
+  const cidadesBrasileiras = [
+    "São Paulo - SP",
+    "Rio de Janeiro - RJ",
+    "Belo Horizonte - MG",
+    "Salvador - BA",
+    "Brasília - DF",
+    "Fortaleza - CE",
+    "Manaus - AM",
+    "Curitiba - PR",
+    "Recife - PE",
+    "Goiânia - GO",
+    "Belém - PA",
+    "Porto Alegre - RS",
+    "Guarulhos - SP",
+    "Campinas - SP",
+    "São Luís - MA",
+    "São Gonçalo - RJ",
+    "Maceió - AL",
+    "Duque de Caxias - RJ",
+    "Natal - RN",
+    "Teresina - PI",
+    "Campo Grande - MS",
+    "Nova Iguaçu - RJ",
+    "São Bernardo do Campo - SP",
+    "João Pessoa - PB",
+    "Santo André - SP",
+    "Osasco - SP",
+    "Jaboatão dos Guararapes - PE",
+    "São José dos Campos - SP",
+    "Ribeirão Preto - SP",
+    "Uberlândia - MG",
+    "Sorocaba - SP",
+    "Contagem - MG",
+    "Aracaju - SE",
+    "Feira de Santana - BA",
+    "Cuiabá - MT",
+    "Joinville - SC",
+    "Aparecida de Goiânia - GO",
+    "Londrina - PR",
+    "Ananindeua - PA",
+    "Serra - ES",
+    "Niterói - RJ",
+    "Caxias do Sul - RS",
+    "Campos dos Goytacazes - RJ",
+    "Vila Velha - ES",
+    "Florianópolis - SC",
+    "Macapá - AP",
+    "Diadema - SP",
+    "São João de Meriti - RJ",
+    "Mauá - SP",
+    "São Vicente - SP",
+    "Jundiaí - SP",
+    "Betim - MG",
+    "Canoas - RS",
+    "Carapicuíba - SP",
+    "Mogi das Cruzes - SP",
+    "Piracicaba - SP",
+    "Bauru - SP",
+    "Montes Claros - MG",
+    "Cariacica - ES",
+    "Itaquaquecetuba - SP",
+    "São Caetano do Sul - SP",
+    "Blumenau - SC",
+    "Ribeirão das Neves - MG",
+    "Volta Redonda - RJ",
+    "Petrolina - PE",
+    "Uberaba - MG",
+    "Paulista - PE",
+    "Cascavel - PR",
+    "Praia Grande - SP",
+    "São José do Rio Preto - SP",
+    "Guarujá - SP",
+    "Taubaté - SP",
+    "Embu das Artes - SP",
+    "Limeira - SP",
+    "Camaçari - BA",
+    "Petrópolis - RJ",
+    "Suzano - SP",
+    "Taboão da Serra - SP",
+    "Várzea Grande - MT",
+    "Barueri - SP",
+    "Viamão - RS",
+    "Pindamonhangaba - SP",
+    "Cabo Frio - RJ",
+    "Araçatuba - SP",
+    "Rio Branco - AC",
+    "Boa Vista - RR",
+    "Palmas - TO",
+    "Vitória - ES",
+    "Caucaia - CE",
+    "Itabuna - BA",
+    "Foz do Iguaçu - PR",
+    "Franca - SP",
+    "Americana - SP",
+    "Santa Maria - RS",
+    "Guarapuava - PR",
+    "Caruaru - PE",
+    "Mossoró - RN",
+    "Rondonópolis - MT",
+    "Jacareí - SP",
+    "Arapiraca - AL",
+    "Tatuí - SP",
+    "Parnamirim - RN",
+    "Marília - SP",
+    "Anápolis - GO",
+    "Itu - SP",
+    "Pindamonhangaba - SP",
+    "Cabo de Santo Agostinho - PE",
+    "Rio Claro - SP",
+    "Poços de Caldas - MG",
+    "Patos de Minas - MG",
+    "Pindamonhangaba - SP",
+    "Pindamonhangaba - SP",
+    "Pindamonhangaba - SP"
+  ];
+
+  // Função para detectar localização automaticamente
+  const detectarLocalizacao = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocalização não é suportada por este navegador.');
+      return;
+    }
+
+    setIsDetectingLocation(true);
+    
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          
+          // Usar uma API de geocodificação reversa (exemplo com OpenStreetMap)
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&accept-language=pt-BR`
+          );
+          const data = await response.json();
+          
+          if (data.address) {
+            const cidade = data.address.city || data.address.town || data.address.village;
+            const estado = data.address.state;
+            
+            if (cidade && estado) {
+              const cidadeFormatada = `${cidade} - ${estado}`;
+              setFormData(prev => ({ ...prev, cidade: cidadeFormatada }));
+              
+              // Validar o campo cidade
+              validateField('cidade', cidadeFormatada);
+            } else {
+              alert('Não foi possível determinar sua cidade automaticamente.');
+            }
+          }
+        } catch (error) {
+          console.error('Erro ao obter localização:', error);
+          alert('Erro ao obter sua localização. Por favor, selecione manualmente.');
+        } finally {
+          setIsDetectingLocation(false);
+        }
+      },
+      (error) => {
+        console.error('Erro de geolocalização:', error);
+        alert('Não foi possível acessar sua localização. Por favor, selecione sua cidade manualmente.');
+        setIsDetectingLocation(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000
+      }
+    );
+  };
 
   // Validação em tempo real
   const validateField = (name, value) => {
@@ -60,6 +234,20 @@ export default function CandidateForm() {
           delete newErrors.cpf;
         }
         break;
+      case 'cidade':
+        if (!value) {
+          newErrors.cidade = 'Cidade é obrigatória';
+        } else {
+          delete newErrors.cidade;
+        }
+        break;
+      case 'aceiteLGPD':
+        if (!value) {
+          newErrors.aceiteLGPD = 'Você deve aceitar os termos LGPD';
+        } else {
+          delete newErrors.aceiteLGPD;
+        }
+        break;
       case 'pisImg':
       case 'rgFrenteImg':
       case 'rgVersoImg':
@@ -82,7 +270,7 @@ export default function CandidateForm() {
 
   // Lida com mudanças no formulário
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     
     if (name === "cpfImg" || name === "pisImg" || name === "rgFrenteImg" || name === "rgVersoImg" || name === "enderecoImg") {
       setFormData({ ...formData, [name]: e.target.files[0] });
@@ -95,6 +283,9 @@ export default function CandidateForm() {
         delete newErrors[name];
         setErrors(newErrors);
       }
+    } else if (type === 'checkbox') {
+      setFormData({ ...formData, [name]: checked });
+      validateField(name, checked);
     } else {
       let formattedValue = value;
       
@@ -129,11 +320,13 @@ export default function CandidateForm() {
         idade: "",
         telefone: "",
         cpf: "",
+        cidade: "",
         cpfImg: null,
         pisImg: null,
         rgFrenteImg: null,
         rgVersoImg: null,
-        enderecoImg: null
+        enderecoImg: null,
+        aceiteLGPD: false
       });
       setErrors({});
     }
@@ -214,6 +407,41 @@ export default function CandidateForm() {
           </div>
 
           <div className="form-group">
+            <label htmlFor="cidade">Cidade *</label>
+            <div className="city-input-container">
+              <select
+                id="cidade"
+                name="cidade"
+                value={formData.cidade}
+                onChange={handleChange}
+                required
+                aria-describedby={errors.cidade ? "cidade-error" : undefined}
+                className={errors.cidade ? "error" : ""}
+              >
+                <option value="">Selecione sua cidade</option>
+                {cidadesBrasileiras.map((cidade, index) => (
+                  <option key={index} value={cidade}>
+                    {cidade}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={detectarLocalizacao}
+                disabled={isDetectingLocation}
+                className="location-button"
+                title="Detectar localização automaticamente"
+              >
+                {isDetectingLocation ? "🔄" : "📍"}
+              </button>
+            </div>
+            {errors.cidade && <span id="cidade-error" className="error-message">{errors.cidade}</span>}
+            <small className="city-help">
+              Selecione sua cidade ou clique no ícone 📍 para detectar automaticamente
+            </small>
+          </div>
+
+          <div className="form-group">
             <label htmlFor="cpfImg">Foto do CPF *</label>
             <input
               id="cpfImg"
@@ -291,6 +519,31 @@ export default function CandidateForm() {
             />
             {errors.enderecoImg && <span id="enderecoImg-error" className="error-message">{errors.enderecoImg}</span>}
             <small className="file-help">Formatos aceitos: JPG, PNG. Máximo 5MB.</small>
+          </div>
+
+          <div className="form-group lgpd-group">
+            <div className="checkbox-container">
+              <input
+                id="aceiteLGPD"
+                name="aceiteLGPD"
+                type="checkbox"
+                checked={formData.aceiteLGPD}
+                onChange={handleChange}
+                required
+                className={errors.aceiteLGPD ? "error" : ""}
+                aria-describedby={errors.aceiteLGPD ? "aceiteLGPD-error" : "lgpd-help"}
+              />
+              <label htmlFor="aceiteLGPD" className="checkbox-label">
+                Li e aceito os termos da <a href="#" target="_blank" rel="noopener noreferrer">Lei Geral de Proteção de Dados (LGPD)</a> *
+              </label>
+            </div>
+            {errors.aceiteLGPD && <span id="aceiteLGPD-error" className="error-message">{errors.aceiteLGPD}</span>}
+            <div id="lgpd-help" className="lgpd-help">
+              <small>
+                Ao marcar esta opção, você concorda com o tratamento dos seus dados pessoais conforme nossa 
+                <a href="#" target="_blank" rel="noopener noreferrer"> Política de Privacidade</a>.
+              </small>
+            </div>
           </div>
 
           <button 
