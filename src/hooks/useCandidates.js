@@ -90,14 +90,18 @@ export const useCandidates = () => {
         updatedAt: serverTimestamp()
       });
 
-      // Log da atividade
-      await setDoc(doc(db, 'logs', crypto.randomUUID()), {
-        action: 'create',
-        candidateId: candidateId,
-        candidateName: candidateData.nome,
-        timestamp: serverTimestamp(),
-        userAgent: navigator.userAgent
-      });
+      // Log da atividade (transparente para o usuário)
+      try {
+        await setDoc(doc(db, 'logs', crypto.randomUUID()), {
+          action: 'create',
+          candidateId: candidateId,
+          candidateName: candidateData.nome,
+          timestamp: serverTimestamp(),
+          userAgent: navigator.userAgent
+        });
+      } catch (logError) {
+        console.warn('Erro ao salvar log (não afeta o usuário):', logError);
+      }
 
       // Backup automático
       await setDoc(doc(db, 'backup', 'candidates', candidateId), {
@@ -111,7 +115,7 @@ export const useCandidates = () => {
         backupAt: serverTimestamp()
       });
 
-      showNotification('Candidato adicionado com sucesso!', 'success');
+      showNotification('Trabalhador cadastrado com sucesso!', 'success');
       return true;
     } catch (error) {
       const errorMessage = getErrorMessage(error);
@@ -133,16 +137,20 @@ export const useCandidates = () => {
         updatedAt: serverTimestamp()
       });
 
-      // Log da atividade
-      await setDoc(doc(db, 'logs', crypto.randomUUID()), {
-        action: 'status_update',
-        candidateId: candidateId,
-        candidateName: candidate?.nome || 'Desconhecido',
-        oldStatus: oldStatus,
-        newStatus: status,
-        timestamp: serverTimestamp(),
-        userAgent: navigator.userAgent
-      });
+      // Log da atividade (transparente para o usuário)
+      try {
+        await setDoc(doc(db, 'logs', crypto.randomUUID()), {
+          action: 'status_update',
+          candidateId: candidateId,
+          candidateName: candidate?.nome || 'Desconhecido',
+          oldStatus: oldStatus,
+          newStatus: status,
+          timestamp: serverTimestamp(),
+          userAgent: navigator.userAgent
+        });
+      } catch (logError) {
+        console.warn('Erro ao salvar log (não afeta o usuário):', logError);
+      }
 
       // Atualizar backup
       await setDoc(doc(db, 'backup', 'candidates', candidateId), {
@@ -196,14 +204,18 @@ export const useCandidates = () => {
       // Deletar do backup
       await deleteDoc(doc(db, 'backup', 'candidates', candidateId));
 
-      // Log da atividade
-      await setDoc(doc(db, 'logs', crypto.randomUUID()), {
-        action: 'delete',
-        candidateId: candidateId,
-        candidateName: candidate.nome,
-        timestamp: serverTimestamp(),
-        userAgent: navigator.userAgent
-      });
+      // Log da atividade (transparente para o usuário)
+      try {
+        await setDoc(doc(db, 'logs', crypto.randomUUID()), {
+          action: 'delete',
+          candidateId: candidateId,
+          candidateName: candidate.nome,
+          timestamp: serverTimestamp(),
+          userAgent: navigator.userAgent
+        });
+      } catch (logError) {
+        console.warn('Erro ao salvar log (não afeta o usuário):', logError);
+      }
 
       showNotification(`Candidato ${candidate.nome} deletado com sucesso!`, 'success');
       return true;
