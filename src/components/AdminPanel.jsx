@@ -22,7 +22,7 @@ function downloadCSV(rows) {
 }
 
 export default function AdminPanel() {
-  const { candidates, loading, updateCandidateStatus, deleteCandidate, migrateCandidates } = useCandidates();
+  const { candidates, loading, updateCandidateStatus, deleteCandidate } = useCandidates();
   const { requireAuth, logout } = useAuth();
   const [filter, setFilter] = useState('All');
   const [cityFilter, setCityFilter] = useState('All');
@@ -154,25 +154,13 @@ export default function AdminPanel() {
           />
         </div>
         
-        <div className="admin-actions-group">
-          <button 
-            onClick={() => downloadCSV(filteredCandidates)}
-            className="export-button"
-            disabled={filteredCandidates.length === 0}
-          >
-            Exportar CSV ({filteredCandidates.length})
-          </button>
-          
-          {candidatesWithoutCity > 0 && (
-            <button 
-              onClick={migrateCandidates}
-              className="migrate-button"
-              title={`Migrar ${candidatesWithoutCity} candidatos sem cidade`}
-            >
-              Migrar Candidatos ({candidatesWithoutCity})
-            </button>
-          )}
-        </div>
+        <button 
+          onClick={() => downloadCSV(filteredCandidates)}
+          className="export-button"
+          disabled={filteredCandidates.length === 0}
+        >
+          Exportar CSV ({filteredCandidates.length})
+        </button>
       </div>
 
       <div className="table-container">

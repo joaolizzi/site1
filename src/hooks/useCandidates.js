@@ -30,30 +30,6 @@ export const useCandidates = () => {
     return () => unsubscribe();
   }, []);
 
-  // Função para migrar candidatos existentes (adicionar campo cidade se não existir)
-  const migrateCandidates = async () => {
-    try {
-      const candidatesToMigrate = candidates.filter(c => c.cidade === undefined);
-      
-      if (candidatesToMigrate.length === 0) return;
-      
-      console.log(`Migrando ${candidatesToMigrate.length} candidatos...`);
-      
-      const migrationPromises = candidatesToMigrate.map(async (candidate) => {
-        const candidateRef = doc(db, 'candidates', candidate.id);
-        await updateDoc(candidateRef, {
-          cidade: '',
-          aceiteLGPD: false,
-          updatedAt: serverTimestamp()
-        });
-      });
-      
-      await Promise.all(migrationPromises);
-      console.log('Migração concluída com sucesso');
-    } catch (error) {
-      console.error('Erro na migração:', error);
-    }
-  };
 
   const addCandidate = async (candidateData) => {
     try {
@@ -115,7 +91,7 @@ export const useCandidates = () => {
       });
 
       // Log da atividade
-      await setDoc(doc(db, 'logs', 'candidate_logs', crypto.randomUUID()), {
+      await setDoc(doc(db, 'logs', crypto.randomUUID()), {
         action: 'create',
         candidateId: candidateId,
         candidateName: candidateData.nome,
@@ -244,7 +220,6 @@ export const useCandidates = () => {
     error,
     addCandidate,
     updateCandidateStatus,
-    deleteCandidate,
-    migrateCandidates
+    deleteCandidate
   };
 };

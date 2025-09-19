@@ -19,7 +19,6 @@ export default function CandidateForm() {
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDetectingLocation, setIsDetectingLocation] = useState(false);
   const [cidadeSearch, setCidadeSearch] = useState("");
   const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [showLGPDInfo, setShowLGPDInfo] = useState(false);
@@ -559,59 +558,6 @@ export default function CandidateForm() {
     validateField('cidade', cidade);
   };
 
-  // Função para detectar localização automaticamente
-  const detectarLocalizacao = () => {
-    if (!navigator.geolocation) {
-      alert('Geolocalização não é suportada por este navegador.');
-      return;
-    }
-
-    setIsDetectingLocation(true);
-    
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          const { latitude, longitude } = position.coords;
-          
-          // Usar uma API de geocodificação reversa (exemplo com OpenStreetMap)
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&accept-language=pt-BR`
-          );
-          const data = await response.json();
-          
-          if (data.address) {
-            const cidade = data.address.city || data.address.town || data.address.village;
-            const estado = data.address.state;
-            
-            if (cidade && estado) {
-              const cidadeFormatada = `${cidade} - ${estado}`;
-              setFormData(prev => ({ ...prev, cidade: cidadeFormatada }));
-              
-              // Validar o campo cidade
-              validateField('cidade', cidadeFormatada);
-            } else {
-              alert('Não foi possível determinar sua cidade automaticamente.');
-            }
-          }
-        } catch (error) {
-          console.error('Erro ao obter localização:', error);
-          alert('Erro ao obter sua localização. Por favor, selecione manualmente.');
-        } finally {
-          setIsDetectingLocation(false);
-        }
-      },
-      (error) => {
-        console.error('Erro de geolocalização:', error);
-        alert('Não foi possível acessar sua localização. Por favor, selecione sua cidade manualmente.');
-        setIsDetectingLocation(false);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 300000
-      }
-    );
-  };
 
   // Validação em tempo real
   const validateField = (name, value) => {
@@ -844,15 +790,6 @@ export default function CandidateForm() {
                 className={errors.cidade ? "error" : ""}
                 autoComplete="off"
               />
-              <button
-                type="button"
-                onClick={detectarLocalizacao}
-                disabled={isDetectingLocation}
-                className="location-button"
-                title="Detectar localização automaticamente"
-              >
-                {isDetectingLocation ? "🔄" : "📍"}
-              </button>
               
               {showCityDropdown && cidadesFiltradas.length > 0 && (
                 <div className="city-dropdown">
@@ -875,7 +812,7 @@ export default function CandidateForm() {
             </div>
             {errors.cidade && <span id="cidade-error" className="error-message">{errors.cidade}</span>}
             <small className="city-help">
-              Digite para pesquisar sua cidade ou clique no ícone 📍 para detectar automaticamente
+              Digite para pesquisar sua cidade
             </small>
           </div>
 
