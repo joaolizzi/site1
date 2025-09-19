@@ -21,121 +21,11 @@ export default function CandidateForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [cidadeSearch, setCidadeSearch] = useState("");
   const [showCityDropdown, setShowCityDropdown] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
-  // Lista completa de cidades brasileiras (incluindo todas as cidades do Paraná)
+  // Lista de cidades do Paraná
   const cidadesBrasileiras = [
-    // Principais capitais e cidades grandes
-    "São Paulo - SP",
-    "Rio de Janeiro - RJ",
-    "Belo Horizonte - MG",
-    "Salvador - BA",
-    "Brasília - DF",
-    "Fortaleza - CE",
-    "Manaus - AM",
-    "Curitiba - PR",
-    "Recife - PE",
-    "Goiânia - GO",
-    "Belém - PA",
-    "Porto Alegre - RS",
-    "Guarulhos - SP",
-    "Campinas - SP",
-    "São Luís - MA",
-    "São Gonçalo - RJ",
-    "Maceió - AL",
-    "Duque de Caxias - RJ",
-    "Natal - RN",
-    "Teresina - PI",
-    "Campo Grande - MS",
-    "Nova Iguaçu - RJ",
-    "São Bernardo do Campo - SP",
-    "João Pessoa - PB",
-    "Santo André - SP",
-    "Osasco - SP",
-    "Jaboatão dos Guararapes - PE",
-    "São José dos Campos - SP",
-    "Ribeirão Preto - SP",
-    "Uberlândia - MG",
-    "Sorocaba - SP",
-    "Contagem - MG",
-    "Aracaju - SE",
-    "Feira de Santana - BA",
-    "Cuiabá - MT",
-    "Joinville - SC",
-    "Aparecida de Goiânia - GO",
-    "Londrina - PR",
-    "Ananindeua - PA",
-    "Serra - ES",
-    "Niterói - RJ",
-    "Caxias do Sul - RS",
-    "Campos dos Goytacazes - RJ",
-    "Vila Velha - ES",
-    "Florianópolis - SC",
-    "Macapá - AP",
-    "Diadema - SP",
-    "São João de Meriti - RJ",
-    "Mauá - SP",
-    "São Vicente - SP",
-    "Jundiaí - SP",
-    "Betim - MG",
-    "Canoas - RS",
-    "Carapicuíba - SP",
-    "Mogi das Cruzes - SP",
-    "Piracicaba - SP",
-    "Bauru - SP",
-    "Montes Claros - MG",
-    "Cariacica - ES",
-    "Itaquaquecetuba - SP",
-    "São Caetano do Sul - SP",
-    "Blumenau - SC",
-    "Ribeirão das Neves - MG",
-    "Volta Redonda - RJ",
-    "Petrolina - PE",
-    "Uberaba - MG",
-    "Paulista - PE",
-    "Cascavel - PR",
-    "Praia Grande - SP",
-    "São José do Rio Preto - SP",
-    "Guarujá - SP",
-    "Taubaté - SP",
-    "Embu das Artes - SP",
-    "Limeira - SP",
-    "Camaçari - BA",
-    "Petrópolis - RJ",
-    "Suzano - SP",
-    "Taboão da Serra - SP",
-    "Várzea Grande - MT",
-    "Barueri - SP",
-    "Viamão - RS",
-    "Pindamonhangaba - SP",
-    "Cabo Frio - RJ",
-    "Araçatuba - SP",
-    "Rio Branco - AC",
-    "Boa Vista - RR",
-    "Palmas - TO",
-    "Vitória - ES",
-    "Caucaia - CE",
-    "Itabuna - BA",
-    "Foz do Iguaçu - PR",
-    "Franca - SP",
-    "Americana - SP",
-    "Santa Maria - RS",
-    "Guarapuava - PR",
-    "Caruaru - PE",
-    "Mossoró - RN",
-    "Rondonópolis - MT",
-    "Jacareí - SP",
-    "Arapiraca - AL",
-    "Tatuí - SP",
-    "Parnamirim - RN",
-    "Marília - SP",
-    "Anápolis - GO",
-    "Itu - SP",
-    "Cabo de Santo Agostinho - PE",
-    "Rio Claro - SP",
-    "Poços de Caldas - MG",
-    "Patos de Minas - MG",
-    
-    // TODAS AS CIDADES DO PARANÁ
+    // CIDADES DO PARANÁ
     "Abatiá - PR",
     "Adrianópolis - PR",
     "Agudos do Sul - PR",
@@ -734,6 +624,13 @@ Para exercer seus direitos ou esclarecer dúvidas sobre o tratamento de seus dad
         aceiteLGPD: false
       });
       setErrors({});
+      setCidadeSearch("");
+      setShowConfirmation(true);
+      
+      // Esconder confirmação após 5 segundos
+      setTimeout(() => {
+        setShowConfirmation(false);
+      }, 5000);
     }
     
     setIsSubmitting(false);
@@ -744,6 +641,16 @@ Para exercer seus direitos ou esclarecer dúvidas sobre o tratamento de seus dad
     <div className="form-container-single">
       <div className="card">
         <h1>Formulário de Candidato</h1>
+        
+        {showConfirmation && (
+          <div className="confirmation-message">
+            <div className="confirmation-content">
+              <div className="confirmation-icon">✅</div>
+              <h2>Candidatura Confirmada!</h2>
+              <p>Sua candidatura foi enviada com sucesso. Você receberá um retorno em breve.</p>
+            </div>
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="candidate-form">
           <div className="form-group">
             <label htmlFor="nome">Nome Completo *</label>

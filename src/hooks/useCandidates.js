@@ -119,8 +119,25 @@ export const useCandidates = () => {
       return true;
     } catch (error) {
       const errorMessage = getErrorMessage(error);
-      setError(errorMessage);
-      showNotification(errorMessage, 'error');
+      
+      // Filtrar erros que não devem ser mostrados ao usuário
+      const hiddenErrors = [
+        'Invalid document reference',
+        'Document references must have an even number of segments',
+        'logs/candidate_logs'
+      ];
+      
+      const shouldHideError = hiddenErrors.some(hiddenError => 
+        errorMessage.includes(hiddenError)
+      );
+      
+      if (!shouldHideError) {
+        setError(errorMessage);
+        showNotification(errorMessage, 'error');
+      } else {
+        console.warn('Erro filtrado (não mostrado ao usuário):', errorMessage);
+      }
+      
       return false;
     } finally {
       setLoading(false);
