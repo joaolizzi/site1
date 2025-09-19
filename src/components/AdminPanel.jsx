@@ -25,6 +25,7 @@ export default function AdminPanel() {
   const { candidates, loading, updateCandidateStatus, deleteCandidate } = useCandidates();
   const { requireAuth, logout } = useAuth();
   const [filter, setFilter] = useState('All');
+  const [cityFilter, setCityFilter] = useState('All');
   const [search, setSearch] = useState('');
   const [previewImg, setPreviewImg] = useState(null);
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, candidate: null });
@@ -34,15 +35,24 @@ export default function AdminPanel() {
     requireAuth();
   }, [requireAuth]);
 
+  // Obter lista única de cidades para o filtro
+  const uniqueCities = useMemo(() => {
+    const cities = [...new Set(candidates.map(c => c.cidade).filter(Boolean))];
+    return cities.sort();
+  }, [candidates]);
+
   // Memoizar filtros para performance
   const filteredCandidates = useMemo(() => {
     return candidates.filter(c => {
       if (filter !== 'All' && c.status !== filter) return false;
+      if (cityFilter !== 'All' && c.cidade !== cityFilter) return false;
       if (!search) return true;
       const s = search.toLowerCase();
-      return (c.nome && c.nome.toLowerCase().includes(s)) || (c.cpf && c.cpf.toLowerCase().includes(s));
+      return (c.nome && c.nome.toLowerCase().includes(s)) || 
+             (c.cpf && c.cpf.toLowerCase().includes(s)) ||
+             (c.cidade && c.cidade.toLowerCase().includes(s));
     });
-  }, [candidates, filter, search]);
+  }, [candidates, filter, cityFilter, search]);
 
   const handleStatusChange = async (candidateId, status) => {
     await updateCandidateStatus(candidateId, status);
@@ -101,13 +111,28 @@ export default function AdminPanel() {
             <option value='Rejeitado'>Rejeitado</option>
           </select>
         </div>
+
+        <div className="filter-group">
+          <label htmlFor="city-filter">Filtrar por cidade:</label>
+          <select 
+            id="city-filter"
+            value={cityFilter} 
+            onChange={e => setCityFilter(e.target.value)}
+            aria-label="Filtrar candidatos por cidade"
+          >
+            <option value='All'>Todas as cidades</option>
+            {uniqueCities.map(city => (
+              <option key={city} value={city}>{city}</option>
+            ))}
+          </select>
+        </div>
         
         <div className="search-group">
           <label htmlFor="search-input">Buscar:</label>
           <input 
             id="search-input"
             type="text"
-            placeholder='Buscar por nome ou CPF' 
+            placeholder='Buscar por nome, CPF ou cidade' 
             value={search} 
             onChange={e => setSearch(e.target.value)}
             aria-label="Buscar candidatos"
@@ -131,6 +156,7 @@ export default function AdminPanel() {
               <th>CPF</th>
               <th>Idade</th>
               <th>Telefone</th>
+              <th>Cidade</th>
               <th>Status</th>
               <th>Documentos</th>
               <th>Ações</th>
@@ -143,6 +169,7 @@ export default function AdminPanel() {
                 <td>{c.cpf}</td>
                 <td>{c.idade} anos</td>
                 <td>{c.telefone}</td>
+                <td className="candidate-city">{c.cidade || 'Não informado'}</td>
                 <td>
                   <span className={`status status-${c.status?.toLowerCase() || 'backlog'}`}>
                     {c.status || 'Backlog'}
@@ -264,7 +291,7 @@ export default function AdminPanel() {
         
         {filteredCandidates.length === 0 && (
           <div className="no-results">
-            {search || filter !== 'All' 
+            {search || filter !== 'All' || cityFilter !== 'All'
               ? 'Nenhum candidato encontrado com os filtros aplicados.' 
               : 'Nenhum candidato cadastrado ainda.'
             }

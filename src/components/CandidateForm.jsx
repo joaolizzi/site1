@@ -20,9 +20,12 @@ export default function CandidateForm() {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
+  const [cidadeSearch, setCidadeSearch] = useState("");
+  const [showCityDropdown, setShowCityDropdown] = useState(false);
 
-  // Lista de cidades brasileiras principais
+  // Lista completa de cidades brasileiras (incluindo todas as cidades do Paraná)
   const cidadesBrasileiras = [
+    // Principais capitais e cidades grandes
     "São Paulo - SP",
     "Rio de Janeiro - RJ",
     "Belo Horizonte - MG",
@@ -128,15 +131,432 @@ export default function CandidateForm() {
     "Marília - SP",
     "Anápolis - GO",
     "Itu - SP",
-    "Pindamonhangaba - SP",
     "Cabo de Santo Agostinho - PE",
     "Rio Claro - SP",
     "Poços de Caldas - MG",
     "Patos de Minas - MG",
-    "Pindamonhangaba - SP",
-    "Pindamonhangaba - SP",
-    "Pindamonhangaba - SP"
+    
+    // TODAS AS CIDADES DO PARANÁ
+    "Abatiá - PR",
+    "Adrianópolis - PR",
+    "Agudos do Sul - PR",
+    "Almirante Tamandaré - PR",
+    "Altamira do Paraná - PR",
+    "Alto Paraíso - PR",
+    "Alto Paraná - PR",
+    "Alto Piquiri - PR",
+    "Altônia - PR",
+    "Amaporã - PR",
+    "Ampére - PR",
+    "Anahy - PR",
+    "Andirá - PR",
+    "Ângulo - PR",
+    "Antonina - PR",
+    "Antônio Olinto - PR",
+    "Apucarana - PR",
+    "Arapongas - PR",
+    "Arapoti - PR",
+    "Arapuã - PR",
+    "Araruna - PR",
+    "Araucária - PR",
+    "Ariranha do Ivaí - PR",
+    "Assaí - PR",
+    "Assis Chateaubriand - PR",
+    "Astorga - PR",
+    "Atalaia - PR",
+    "Balsa Nova - PR",
+    "Bandeirantes - PR",
+    "Barbosa Ferraz - PR",
+    "Barra do Jacaré - PR",
+    "Barracão - PR",
+    "Bela Vista da Caroba - PR",
+    "Bela Vista do Paraíso - PR",
+    "Bituruna - PR",
+    "Boa Esperança - PR",
+    "Boa Esperança do Iguaçu - PR",
+    "Boa Ventura de São Roque - PR",
+    "Boa Vista da Aparecida - PR",
+    "Bocaiúva do Sul - PR",
+    "Bom Jesus do Sul - PR",
+    "Bom Sucesso - PR",
+    "Bom Sucesso do Sul - PR",
+    "Borrazópolis - PR",
+    "Braganey - PR",
+    "Brasilândia do Sul - PR",
+    "Cafeara - PR",
+    "Cafelândia - PR",
+    "Cafezal do Sul - PR",
+    "Cafezal do Sul - PR",
+    "Califórnia - PR",
+    "Cambará - PR",
+    "Cambé - PR",
+    "Cambira - PR",
+    "Campina da Lagoa - PR",
+    "Campina do Simão - PR",
+    "Campina Grande do Sul - PR",
+    "Campo Bonito - PR",
+    "Campo do Tenente - PR",
+    "Campo Largo - PR",
+    "Campo Magro - PR",
+    "Campo Mourão - PR",
+    "Cândido de Abreu - PR",
+    "Candói - PR",
+    "Cantagalo - PR",
+    "Capanema - PR",
+    "Capitão Leônidas Marques - PR",
+    "Carambeí - PR",
+    "Carlópolis - PR",
+    "Cascavel - PR",
+    "Castro - PR",
+    "Catanduvas - PR",
+    "Centenário do Sul - PR",
+    "Cerro Azul - PR",
+    "Céu Azul - PR",
+    "Chopinzinho - PR",
+    "Cianorte - PR",
+    "Cidade Gaúcha - PR",
+    "Clevelândia - PR",
+    "Colombo - PR",
+    "Colorado - PR",
+    "Congonhinhas - PR",
+    "Conselheiro Mairinck - PR",
+    "Contenda - PR",
+    "Corbélia - PR",
+    "Cornélio Procópio - PR",
+    "Coronel Domingos Soares - PR",
+    "Coronel Vivida - PR",
+    "Corumbataí do Sul - PR",
+    "Cruz Machado - PR",
+    "Cruzeiro do Iguaçu - PR",
+    "Cruzeiro do Oeste - PR",
+    "Cruzeiro do Sul - PR",
+    "Cruzmaltina - PR",
+    "Curitiba - PR",
+    "Curiúva - PR",
+    "Diamante do Norte - PR",
+    "Diamante do Sul - PR",
+    "Diamante D'Oeste - PR",
+    "Dois Vizinhos - PR",
+    "Douradina - PR",
+    "Doutor Camargo - PR",
+    "Enéas Marques - PR",
+    "Engenheiro Beltrão - PR",
+    "Entre Rios do Oeste - PR",
+    "Esperança Nova - PR",
+    "Espigão Alto do Iguaçu - PR",
+    "Farol - PR",
+    "Faxinal - PR",
+    "Fazenda Rio Grande - PR",
+    "Fênix - PR",
+    "Fernandes Pinheiro - PR",
+    "Figueira - PR",
+    "Flor da Serra do Sul - PR",
+    "Floraí - PR",
+    "Floresta - PR",
+    "Florestópolis - PR",
+    "Flórida - PR",
+    "Formosa do Oeste - PR",
+    "Foz do Iguaçu - PR",
+    "Foz do Jordão - PR",
+    "Francisco Alves - PR",
+    "Francisco Beltrão - PR",
+    "General Carneiro - PR",
+    "Godoy Moreira - PR",
+    "Goioerê - PR",
+    "Goioxim - PR",
+    "Grandes Rios - PR",
+    "Guaíra - PR",
+    "Guamiranga - PR",
+    "Guapirama - PR",
+    "Guaporema - PR",
+    "Guaraci - PR",
+    "Guaraniaçu - PR",
+    "Guarapuava - PR",
+    "Guaraqueçaba - PR",
+    "Guaratuba - PR",
+    "Honório Serpa - PR",
+    "Ibaiti - PR",
+    "Ibema - PR",
+    "Ibiporã - PR",
+    "Icaraíma - PR",
+    "Iguaraçu - PR",
+    "Iguatu - PR",
+    "Imbaú - PR",
+    "Imbituva - PR",
+    "Inácio Martins - PR",
+    "Inajá - PR",
+    "Indianópolis - PR",
+    "Ipiranga - PR",
+    "Iporã - PR",
+    "Iracema do Oeste - PR",
+    "Irati - PR",
+    "Iretama - PR",
+    "Itaguajé - PR",
+    "Itaipulândia - PR",
+    "Itambaracá - PR",
+    "Itambé - PR",
+    "Itapejara d'Oeste - PR",
+    "Itaperuçu - PR",
+    "Itaúna do Sul - PR",
+    "Ivaí - PR",
+    "Ivaiporã - PR",
+    "Ivaté - PR",
+    "Ivatuba - PR",
+    "Jaboti - PR",
+    "Jacarezinho - PR",
+    "Jaguapitã - PR",
+    "Jaguariaíva - PR",
+    "Jandaia do Sul - PR",
+    "Janiópolis - PR",
+    "Japira - PR",
+    "Japurá - PR",
+    "Jardim Alegre - PR",
+    "Jardim Olinda - PR",
+    "Jataizinho - PR",
+    "Jesuítas - PR",
+    "Joaquim Távora - PR",
+    "Jundiaí do Sul - PR",
+    "Juranda - PR",
+    "Jussara - PR",
+    "Kaloré - PR",
+    "Lapa - PR",
+    "Laranjal - PR",
+    "Laranjeiras do Sul - PR",
+    "Leópolis - PR",
+    "Lidianópolis - PR",
+    "Lindoeste - PR",
+    "Loanda - PR",
+    "Lobato - PR",
+    "Londrina - PR",
+    "Luiziana - PR",
+    "Lunardelli - PR",
+    "Lupionópolis - PR",
+    "Mallet - PR",
+    "Mamborê - PR",
+    "Mandaguaçu - PR",
+    "Mandaguari - PR",
+    "Mandirituba - PR",
+    "Manfrinópolis - PR",
+    "Mangueirinha - PR",
+    "Manoel Ribas - PR",
+    "Marechal Cândido Rondon - PR",
+    "Maria Helena - PR",
+    "Marialva - PR",
+    "Marilândia do Sul - PR",
+    "Marilena - PR",
+    "Mariluz - PR",
+    "Maringá - PR",
+    "Mariópolis - PR",
+    "Maripá - PR",
+    "Marmeleiro - PR",
+    "Marquinho - PR",
+    "Marumbi - PR",
+    "Matelândia - PR",
+    "Matinhos - PR",
+    "Mato Rico - PR",
+    "Mauá da Serra - PR",
+    "Medianeira - PR",
+    "Mercedes - PR",
+    "Mirador - PR",
+    "Miraselva - PR",
+    "Missal - PR",
+    "Moreira Sales - PR",
+    "Morretes - PR",
+    "Munhoz de Melo - PR",
+    "Nossa Senhora das Graças - PR",
+    "Nova Aliança do Ivaí - PR",
+    "Nova América da Colina - PR",
+    "Nova Aurora - PR",
+    "Nova Cantu - PR",
+    "Nova Esperança - PR",
+    "Nova Esperança do Sudoeste - PR",
+    "Nova Fátima - PR",
+    "Nova Laranjeiras - PR",
+    "Nova Londrina - PR",
+    "Nova Olímpia - PR",
+    "Nova Prata do Iguaçu - PR",
+    "Nova Santa Bárbara - PR",
+    "Nova Santa Rosa - PR",
+    "Nova Tebas - PR",
+    "Novo Itacolomi - PR",
+    "Ortigueira - PR",
+    "Ourizona - PR",
+    "Ouro Verde do Oeste - PR",
+    "Paiçandu - PR",
+    "Palmas - PR",
+    "Palmeira - PR",
+    "Palmital - PR",
+    "Palotina - PR",
+    "Paraíso do Norte - PR",
+    "Paranacity - PR",
+    "Paranaguá - PR",
+    "Paranapoema - PR",
+    "Paranavaí - PR",
+    "Pato Bragado - PR",
+    "Pato Branco - PR",
+    "Paula Freitas - PR",
+    "Paulo Frontin - PR",
+    "Peabiru - PR",
+    "Perobal - PR",
+    "Pérola - PR",
+    "Pérola d'Oeste - PR",
+    "Piên - PR",
+    "Pinhais - PR",
+    "Pinhal de São Bento - PR",
+    "Pinhalão - PR",
+    "Pinhão - PR",
+    "Piraí do Sul - PR",
+    "Piraquara - PR",
+    "Pitanga - PR",
+    "Pitangueiras - PR",
+    "Planaltina do Paraná - PR",
+    "Planalto - PR",
+    "Ponta Grossa - PR",
+    "Pontal do Paraná - PR",
+    "Porecatu - PR",
+    "Porto Amazonas - PR",
+    "Porto Barreiro - PR",
+    "Porto Rico - PR",
+    "Porto Vitória - PR",
+    "Prado Ferreira - PR",
+    "Pranchita - PR",
+    "Presidente Castelo Branco - PR",
+    "Primeiro de Maio - PR",
+    "Prudentópolis - PR",
+    "Quarto Centenário - PR",
+    "Quatiguá - PR",
+    "Quatro Barras - PR",
+    "Quatro Pontes - PR",
+    "Quedas do Iguaçu - PR",
+    "Querência do Norte - PR",
+    "Quinta do Sol - PR",
+    "Quitandinha - PR",
+    "Ramilândia - PR",
+    "Rancho Alegre - PR",
+    "Rancho Alegre D'Oeste - PR",
+    "Realeza - PR",
+    "Rebouças - PR",
+    "Renascença - PR",
+    "Reserva - PR",
+    "Reserva do Iguaçu - PR",
+    "Ribeirão Claro - PR",
+    "Ribeirão do Pinhal - PR",
+    "Rio Azul - PR",
+    "Rio Bom - PR",
+    "Rio Branco do Ivaí - PR",
+    "Rio Branco do Sul - PR",
+    "Rio Negro - PR",
+    "Rolândia - PR",
+    "Roncador - PR",
+    "Rondon - PR",
+    "Rosário do Ivaí - PR",
+    "Sabáudia - PR",
+    "Salgado Filho - PR",
+    "Salto do Itararé - PR",
+    "Salto do Lontra - PR",
+    "Santa Amélia - PR",
+    "Santa Cecília do Pavão - PR",
+    "Santa Cruz de Monte Castelo - PR",
+    "Santa Fé - PR",
+    "Santa Helena - PR",
+    "Santa Inês - PR",
+    "Santa Isabel do Ivaí - PR",
+    "Santa Izabel do Oeste - PR",
+    "Santa Lúcia - PR",
+    "Santa Maria do Oeste - PR",
+    "Santa Mariana - PR",
+    "Santa Mônica - PR",
+    "Santa Tereza do Oeste - PR",
+    "Santa Terezinha de Itaipu - PR",
+    "Santana do Itararé - PR",
+    "Santo Antônio da Platina - PR",
+    "Santo Antônio do Caiuá - PR",
+    "Santo Antônio do Paraíso - PR",
+    "Santo Antônio do Sudoeste - PR",
+    "Santo Inácio - PR",
+    "São Carlos do Ivaí - PR",
+    "São Jerônimo da Serra - PR",
+    "São João - PR",
+    "São João do Caiuá - PR",
+    "São João do Ivaí - PR",
+    "São João do Triunfo - PR",
+    "São Jorge d'Oeste - PR",
+    "São Jorge do Ivaí - PR",
+    "São Jorge do Patrocínio - PR",
+    "São José da Boa Vista - PR",
+    "São José das Palmeiras - PR",
+    "São José dos Pinhais - PR",
+    "São Manoel do Paraná - PR",
+    "São Mateus do Sul - PR",
+    "São Miguel do Iguaçu - PR",
+    "São Pedro do Iguaçu - PR",
+    "São Pedro do Ivaí - PR",
+    "São Pedro do Paraná - PR",
+    "São Sebastião da Amoreira - PR",
+    "São Tomé - PR",
+    "Sapopema - PR",
+    "Sarandi - PR",
+    "Sengés - PR",
+    "Serranópolis do Iguaçu - PR",
+    "Sertaneja - PR",
+    "Sertanópolis - PR",
+    "Siqueira Campos - PR",
+    "Sulina - PR",
+    "Tamarana - PR",
+    "Tamboara - PR",
+    "Tapejara - PR",
+    "Tapira - PR",
+    "Teixeira Soares - PR",
+    "Telêmaco Borba - PR",
+    "Terra Boa - PR",
+    "Terra Rica - PR",
+    "Terra Roxa - PR",
+    "Tibagi - PR",
+    "Tijucas do Sul - PR",
+    "Toledo - PR",
+    "Tomazina - PR",
+    "Três Barras do Paraná - PR",
+    "Tunas do Paraná - PR",
+    "Tuneiras do Oeste - PR",
+    "Tupãssi - PR",
+    "Turvo - PR",
+    "Ubiratã - PR",
+    "Umuarama - PR",
+    "União da Vitória - PR",
+    "Uniflor - PR",
+    "Uraí - PR",
+    "Ventania - PR",
+    "Vera Cruz do Oeste - PR",
+    "Verê - PR",
+    "Virmond - PR",
+    "Vitorino - PR",
+    "Wenceslau Braz - PR",
+    "Xambrê - PR"
   ];
+
+  // Filtrar cidades baseado na pesquisa
+  const cidadesFiltradas = cidadesBrasileiras.filter(cidade =>
+    cidade.toLowerCase().includes(cidadeSearch.toLowerCase())
+  );
+
+  // Função para lidar com a pesquisa de cidades
+  const handleCidadeSearch = (e) => {
+    const value = e.target.value;
+    setCidadeSearch(value);
+    setShowCityDropdown(true);
+    
+    if (value) {
+      setFormData({ ...formData, cidade: value });
+    }
+  };
+
+  // Função para selecionar uma cidade
+  const selectCidade = (cidade) => {
+    setFormData({ ...formData, cidade });
+    setCidadeSearch(cidade);
+    setShowCityDropdown(false);
+    validateField('cidade', cidade);
+  };
 
   // Função para detectar localização automaticamente
   const detectarLocalizacao = () => {
@@ -409,22 +829,20 @@ export default function CandidateForm() {
           <div className="form-group">
             <label htmlFor="cidade">Cidade *</label>
             <div className="city-input-container">
-              <select
+              <input
                 id="cidade"
                 name="cidade"
-                value={formData.cidade}
-                onChange={handleChange}
+                type="text"
+                placeholder="Digite para pesquisar sua cidade..."
+                value={cidadeSearch}
+                onChange={handleCidadeSearch}
+                onFocus={() => setShowCityDropdown(true)}
+                onBlur={() => setTimeout(() => setShowCityDropdown(false), 200)}
                 required
                 aria-describedby={errors.cidade ? "cidade-error" : undefined}
                 className={errors.cidade ? "error" : ""}
-              >
-                <option value="">Selecione sua cidade</option>
-                {cidadesBrasileiras.map((cidade, index) => (
-                  <option key={index} value={cidade}>
-                    {cidade}
-                  </option>
-                ))}
-              </select>
+                autoComplete="off"
+              />
               <button
                 type="button"
                 onClick={detectarLocalizacao}
@@ -434,10 +852,29 @@ export default function CandidateForm() {
               >
                 {isDetectingLocation ? "🔄" : "📍"}
               </button>
+              
+              {showCityDropdown && cidadesFiltradas.length > 0 && (
+                <div className="city-dropdown">
+                  {cidadesFiltradas.slice(0, 10).map((cidade, index) => (
+                    <div
+                      key={index}
+                      className="city-option"
+                      onClick={() => selectCidade(cidade)}
+                    >
+                      {cidade}
+                    </div>
+                  ))}
+                  {cidadesFiltradas.length > 10 && (
+                    <div className="city-option-more">
+                      ... e mais {cidadesFiltradas.length - 10} cidades
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             {errors.cidade && <span id="cidade-error" className="error-message">{errors.cidade}</span>}
             <small className="city-help">
-              Selecione sua cidade ou clique no ícone 📍 para detectar automaticamente
+              Digite para pesquisar sua cidade ou clique no ícone 📍 para detectar automaticamente
             </small>
           </div>
 
