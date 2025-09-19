@@ -134,7 +134,7 @@ export const useCandidates = () => {
       });
 
       // Log da atividade
-      await setDoc(doc(db, 'logs', 'candidate_logs', crypto.randomUUID()), {
+      await setDoc(doc(db, 'logs', crypto.randomUUID()), {
         action: 'status_update',
         candidateId: candidateId,
         candidateName: candidate?.nome || 'Desconhecido',
@@ -197,7 +197,7 @@ export const useCandidates = () => {
       await deleteDoc(doc(db, 'backup', 'candidates', candidateId));
 
       // Log da atividade
-      await setDoc(doc(db, 'logs', 'candidate_logs', crypto.randomUUID()), {
+      await setDoc(doc(db, 'logs', crypto.randomUUID()), {
         action: 'delete',
         candidateId: candidateId,
         candidateName: candidate.nome,
