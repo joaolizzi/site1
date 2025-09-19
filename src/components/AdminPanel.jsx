@@ -22,7 +22,7 @@ function downloadCSV(rows) {
 }
 
 export default function AdminPanel() {
-  const { candidates, loading, updateCandidateStatus, deleteCandidate } = useCandidates();
+  const { candidates, loading, updateCandidateStatus, deleteCandidate, migrateCandidates } = useCandidates();
   const { requireAuth, logout } = useAuth();
   const [filter, setFilter] = useState('All');
   const [cityFilter, setCityFilter] = useState('All');
@@ -41,11 +41,23 @@ export default function AdminPanel() {
     return cities.sort();
   }, [candidates]);
 
+  // Contar candidatos sem cidade
+  const candidatesWithoutCity = useMemo(() => {
+    return candidates.filter(c => !c.cidade).length;
+  }, [candidates]);
+
   // Memoizar filtros para performance
   const filteredCandidates = useMemo(() => {
     return candidates.filter(c => {
       if (filter !== 'All' && c.status !== filter) return false;
-      if (cityFilter !== 'All' && c.cidade !== cityFilter) return false;
+      
+      // Filtro por cidade
+      if (cityFilter === 'SemCidade') {
+        if (c.cidade) return false; // Se tem cidade, não incluir
+      } else if (cityFilter !== 'All' && c.cidade !== cityFilter) {
+        return false; // Se tem cidade específica selecionada e não é a mesma
+      }
+      
       if (!search) return true;
       const s = search.toLowerCase();
       return (c.nome && c.nome.toLowerCase().includes(s)) || 
@@ -120,7 +132,10 @@ export default function AdminPanel() {
             onChange={e => setCityFilter(e.target.value)}
             aria-label="Filtrar candidatos por cidade"
           >
-            <option value='All'>Todas as cidades</option>
+            <option value='All'>Todas as cidades ({candidates.length})</option>
+            {candidatesWithoutCity > 0 && (
+              <option value='SemCidade'>Sem cidade cadastrada ({candidatesWithoutCity})</option>
+            )}
             {uniqueCities.map(city => (
               <option key={city} value={city}>{city}</option>
             ))}
@@ -139,13 +154,25 @@ export default function AdminPanel() {
           />
         </div>
         
-        <button 
-          onClick={() => downloadCSV(filteredCandidates)}
-          className="export-button"
-          disabled={filteredCandidates.length === 0}
-        >
-          Exportar CSV ({filteredCandidates.length})
-        </button>
+        <div className="admin-actions-group">
+          <button 
+            onClick={() => downloadCSV(filteredCandidates)}
+            className="export-button"
+            disabled={filteredCandidates.length === 0}
+          >
+            Exportar CSV ({filteredCandidates.length})
+          </button>
+          
+          {candidatesWithoutCity > 0 && (
+            <button 
+              onClick={migrateCandidates}
+              className="migrate-button"
+              title={`Migrar ${candidatesWithoutCity} candidatos sem cidade`}
+            >
+              Migrar Candidatos ({candidatesWithoutCity})
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="table-container">
@@ -169,7 +196,15 @@ export default function AdminPanel() {
                 <td>{c.cpf}</td>
                 <td>{c.idade} anos</td>
                 <td>{c.telefone}</td>
-                <td className="candidate-city">{c.cidade || '-'}</td>
+                <td className="candidate-city">
+                  {c.cidade ? (
+                    <span className="city-name">{c.cidade}</span>
+                  ) : (
+                    <span className="no-city" title="Candidato cadastrado antes da implementação do campo cidade">
+                      Sem cidade
+                    </span>
+                  )}
+                </td>
                 <td>
                   <span className={`status status-${c.status?.toLowerCase() || 'backlog'}`}>
                     {c.status || 'Backlog'}
