@@ -169,7 +169,7 @@ export default function AdminPanel() {
                 <td>{c.cpf}</td>
                 <td>{c.idade} anos</td>
                 <td>{c.telefone}</td>
-                <td className="candidate-city">{c.cidade || 'Não informado'}</td>
+                <td className="candidate-city">{c.cidade || '-'}</td>
                 <td>
                   <span className={`status status-${c.status?.toLowerCase() || 'backlog'}`}>
                     {c.status || 'Backlog'}

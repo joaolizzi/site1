@@ -81,6 +81,8 @@ export const useCandidates = () => {
         idade: parseInt(candidateData.idade),
         telefone: candidateData.telefone,
         cpf: candidateData.cpf,
+        cidade: candidateData.cidade,
+        aceiteLGPD: candidateData.aceiteLGPD,
         ...documentUrls,
         status: 'Backlog',
         createdAt: serverTimestamp(),

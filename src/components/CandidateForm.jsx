@@ -22,6 +22,7 @@ export default function CandidateForm() {
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
   const [cidadeSearch, setCidadeSearch] = useState("");
   const [showCityDropdown, setShowCityDropdown] = useState(false);
+  const [showLGPDInfo, setShowLGPDInfo] = useState(false);
 
   // Lista completa de cidades brasileiras (incluindo todas as cidades do Paraná)
   const cidadesBrasileiras = [
@@ -971,14 +972,14 @@ export default function CandidateForm() {
                 aria-describedby={errors.aceiteLGPD ? "aceiteLGPD-error" : "lgpd-help"}
               />
               <label htmlFor="aceiteLGPD" className="checkbox-label">
-                Li e aceito os termos da <a href="#" target="_blank" rel="noopener noreferrer">Lei Geral de Proteção de Dados (LGPD)</a> *
+                Li e aceito os termos da <button type="button" onClick={() => setShowLGPDInfo(true)} className="lgpd-link">Lei Geral de Proteção de Dados (LGPD)</button> *
               </label>
             </div>
             {errors.aceiteLGPD && <span id="aceiteLGPD-error" className="error-message">{errors.aceiteLGPD}</span>}
             <div id="lgpd-help" className="lgpd-help">
               <small>
                 Ao marcar esta opção, você concorda com o tratamento dos seus dados pessoais conforme nossa 
-                <a href="#" target="_blank" rel="noopener noreferrer"> Política de Privacidade</a>.
+                <button type="button" onClick={() => setShowLGPDInfo(true)} className="lgpd-link"> Política de Privacidade</button>.
               </small>
             </div>
           </div>
@@ -996,6 +997,95 @@ export default function CandidateForm() {
           </div>
         </form>
       </div>
+
+      {/* Modal de Informações LGPD */}
+      {showLGPDInfo && (
+        <div 
+          className="modal-overlay" 
+          onClick={() => setShowLGPDInfo(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Informações sobre LGPD"
+        >
+          <div className="modal-content lgpd-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Lei Geral de Proteção de Dados (LGPD)</h2>
+              <button 
+                className="close-modal"
+                onClick={() => setShowLGPDInfo(false)}
+                aria-label="Fechar modal"
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="lgpd-content">
+                <h3>O que é a LGPD?</h3>
+                <p>
+                  A Lei Geral de Proteção de Dados (Lei nº 13.709/2018) é a legislação brasileira que regula 
+                  o tratamento de dados pessoais por pessoas físicas e jurídicas, tanto no meio físico quanto 
+                  no digital, com o objetivo de proteger os direitos fundamentais de liberdade e privacidade.
+                </p>
+
+                <h3>Seus Direitos</h3>
+                <ul>
+                  <li><strong>Confirmação e acesso:</strong> Saber se tratamos seus dados e acessá-los</li>
+                  <li><strong>Correção:</strong> Corrigir dados incompletos, inexatos ou desatualizados</li>
+                  <li><strong>Anonimização, bloqueio ou eliminação:</strong> Solicitar a anonimização, bloqueio ou eliminação de dados desnecessários</li>
+                  <li><strong>Portabilidade:</strong> Solicitar a portabilidade dos dados para outro fornecedor</li>
+                  <li><strong>Eliminação:</strong> Solicitar a eliminação dos dados tratados com consentimento</li>
+                  <li><strong>Informação:</strong> Obter informações sobre as entidades com as quais compartilhamos dados</li>
+                  <li><strong>Revogação:</strong> Revogar o consentimento a qualquer momento</li>
+                </ul>
+
+                <h3>Como Utilizamos Seus Dados</h3>
+                <p>
+                  Coletamos e tratamos seus dados pessoais exclusivamente para:
+                </p>
+                <ul>
+                  <li>Processamento de candidaturas e seleção de candidatos</li>
+                  <li>Verificação de documentos e informações fornecidas</li>
+                  <li>Comunicação sobre o processo seletivo</li>
+                  <li>Cumprimento de obrigações legais</li>
+                </ul>
+
+                <h3>Compartilhamento de Dados</h3>
+                <p>
+                  Seus dados pessoais não serão compartilhados com terceiros, exceto quando necessário 
+                  para cumprimento de obrigação legal ou regulatória, ou mediante sua autorização expressa.
+                </p>
+
+                <h3>Segurança dos Dados</h3>
+                <p>
+                  Adotamos medidas técnicas e organizacionais adequadas para proteger seus dados pessoais 
+                  contra acesso não autorizado, alteração, divulgação ou destruição.
+                </p>
+
+                <h3>Contato</h3>
+                <p>
+                  Para exercer seus direitos ou esclarecer dúvidas sobre o tratamento de seus dados, 
+                  entre em contato conosco através dos canais oficiais.
+                </p>
+
+                <div className="lgpd-footer">
+                  <small>
+                    <strong>Última atualização:</strong> {new Date().toLocaleDateString('pt-BR')}
+                  </small>
+                </div>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button 
+                type="button"
+                className="btn-secondary"
+                onClick={() => setShowLGPDInfo(false)}
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
