@@ -54,7 +54,7 @@ function downloadExcel(candidates) {
     return {
       'Nome': c.nome || '',
       'CPF': c.cpf || '',
-      'Idade': c.idade ? `${c.idade} anos` : '',
+      'Idade': c.idade || '',
       'Telefone': c.telefone || '',
       'Cidade': c.cidade || 'Sem cidade',
       'Status': c.status || 'Backlog',
@@ -68,98 +68,40 @@ function downloadExcel(candidates) {
   const wb = XLSX.utils.book_new();
   const ws = XLSX.utils.json_to_sheet(exportData);
 
-  // Definir larguras das colunas
-  const colWidths = [
-    { wch: 30 }, // Nome
-    { wch: 15 }, // CPF
-    { wch: 10 }, // Idade
-    { wch: 15 }, // Telefone
-    { wch: 20 }, // Cidade
-    { wch: 12 }, // Status
-    { wch: 40 }, // Documentos
-    { wch: 20 }, // Data de Cadastro
-    { wch: 20 }  // Última Atualização
+  // Definir larguras das colunas para melhor visualização e alinhamento
+  ws['!cols'] = [
+    { wch: 35 }, // Nome
+    { wch: 18 }, // CPF
+    { wch: 8 },  // Idade
+    { wch: 18 }, // Telefone
+    { wch: 25 }, // Cidade
+    { wch: 15 }, // Status
+    { wch: 50 }, // Documentos
+    { wch: 22 }, // Data de Cadastro
+    { wch: 22 }  // Última Atualização
   ];
-  ws['!cols'] = colWidths;
 
-  // Formatar cabeçalhos
-  const range = XLSX.utils.decode_range(ws['!ref']);
-  for (let C = range.s.c; C <= range.e.c; ++C) {
-    const cellAddress = XLSX.utils.encode_cell({ r: 0, c: C });
-    if (!ws[cellAddress]) continue;
-    
-    // Estilizar cabeçalho
-    ws[cellAddress].s = {
-      font: { bold: true, color: { rgb: 'FFFFFF' } },
-      fill: { fgColor: { rgb: '4472C4' } },
-      alignment: { horizontal: 'center', vertical: 'center' },
-      border: {
-        top: { style: 'thin', color: { rgb: '000000' } },
-        bottom: { style: 'thin', color: { rgb: '000000' } },
-        left: { style: 'thin', color: { rgb: '000000' } },
-        right: { style: 'thin', color: { rgb: '000000' } }
-      }
-    };
-  }
+  // Congelar primeira linha (cabeçalho) usando views
+  ws['!views'] = [{ state: 'frozen', ySplit: 1 }];
 
-  // Formatar células de dados
-  for (let R = 1; R <= range.e.r; ++R) {
-    for (let C = range.s.c; C <= range.e.c; ++C) {
-      const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
-      if (!ws[cellAddress]) continue;
-      
-      // Alinhamento
-      ws[cellAddress].s = {
-        ...ws[cellAddress].s,
-        alignment: { 
-          horizontal: C === 0 || C === 4 || C === 5 ? 'left' : 'center',
-          vertical: 'center',
-          wrapText: C === 6 // Quebrar linha na coluna de documentos
-        },
-        border: {
-          top: { style: 'thin', color: { rgb: 'E0E0E0' } },
-          bottom: { style: 'thin', color: { rgb: 'E0E0E0' } },
-          left: { style: 'thin', color: { rgb: 'E0E0E0' } },
-          right: { style: 'thin', color: { rgb: 'E0E0E0' } }
-        }
-      };
-
-      // Formatar coluna de Status com cores
-      if (C === 5) {
-        const status = ws[cellAddress].v;
-        if (status === 'Aprovado') {
-          ws[cellAddress].s.fill = { fgColor: { rgb: 'C6EFCE' } };
-          ws[cellAddress].s.font = { color: { rgb: '006100' }, bold: true };
-        } else if (status === 'Rejeitado') {
-          ws[cellAddress].s.fill = { fgColor: { rgb: 'FFC7CE' } };
-          ws[cellAddress].s.font = { color: { rgb: '9C0006' }, bold: true };
-        } else {
-          ws[cellAddress].s.fill = { fgColor: { rgb: 'FFEB9C' } };
-          ws[cellAddress].s.font = { color: { rgb: '9C6500' }, bold: true };
-        }
-      }
-    }
-
-    // Alternar cores de linha para melhor legibilidade
-    if (R % 2 === 0) {
-      for (let C = range.s.c; C <= range.e.c; ++C) {
-        const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
-        if (ws[cellAddress] && C !== 5) { // Não aplicar na coluna de status
-          ws[cellAddress].s = {
-            ...ws[cellAddress].s,
-            fill: { fgColor: { rgb: 'F2F2F2' } }
-          };
-        }
-      }
-    }
+  // Adicionar filtro automático na primeira linha
+  if (exportData.length > 0) {
+    const numCols = Object.keys(exportData[0]).length;
+    const range = XLSX.utils.encode_range({ 
+      s: { c: 0, r: 0 }, 
+      e: { c: numCols - 1, r: exportData.length } 
+    });
+    ws['!autofilter'] = { ref: range };
   }
 
   // Adicionar worksheet ao workbook
   XLSX.utils.book_append_sheet(wb, ws, 'Candidatos');
 
-  // Gerar nome do arquivo com data
-  const date = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
-  const fileName = `candidatos_${date}.xlsx`;
+  // Gerar nome do arquivo com data e hora
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('pt-BR').replace(/\//g, '-');
+  const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }).replace(/:/g, '');
+  const fileName = `candidatos_${dateStr}_${timeStr}.xlsx`;
 
   // Exportar arquivo
   XLSX.writeFile(wb, fileName);
