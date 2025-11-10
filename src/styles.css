@@ -922,6 +922,28 @@ input.error {
   box-shadow: var(--shadow-sm);
 }
 
+.export-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.export-excel {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.export-excel:hover:not(:disabled) {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+.export-csv {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.export-csv:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+}
+
 .table-container {
   background: var(--gradient-card);
   backdrop-filter: blur(20px);
