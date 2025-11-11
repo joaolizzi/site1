@@ -44,20 +44,9 @@ Sistema moderno para cadastro e gerenciamento de candidatos com interface respon
 npm install
 ```
 
-3. Configure as variáveis de ambiente (opcional):
-```bash
-# Crie um arquivo .env na raiz do projeto
-VITE_FIREBASE_API_KEY=sua_api_key
-VITE_FIREBASE_AUTH_DOMAIN=seu_domain
-VITE_FIREBASE_PROJECT_ID=seu_project_id
-VITE_FIREBASE_STORAGE_BUCKET=seu_storage_bucket
-VITE_FIREBASE_MESSAGING_SENDER_ID=seu_sender_id
-VITE_FIREBASE_APP_ID=seu_app_id
-VITE_FIREBASE_MEASUREMENT_ID=seu_measurement_id
-VITE_ADMIN_PASSWORD=sua_senha_admin
-```
 
-4. Execute o projeto:
+
+3. Execute o projeto:
 ```bash
 npm run dev
 ```
@@ -206,4 +195,4 @@ firestore/
 
 ## 📄 Licença
 
-Este projeto é privado e destinado ao uso interno.
+Este projeto é privado e destinado ao uso interno da MMG.

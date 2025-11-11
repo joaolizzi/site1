@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useCandidates } from "../hooks/useCandidates";
-import { validateCPF, validatePhone, formatPhone, formatCPF } from "../utils/validation";
+import { validateCPF, validatePhone, formatPhone, formatCPF, validateFile } from "../utils/validation";
+import { showNotification } from "../utils/errorHandler";
 
 export default function CandidateForm() {
   const { addCandidate } = useCandidates();
@@ -22,6 +23,13 @@ export default function CandidateForm() {
   const [cidadeSearch, setCidadeSearch] = useState("");
   const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [previews, setPreviews] = useState({
+    cpfImg: null,
+    pisImg: null,
+    rgFrenteImg: null,
+    rgVersoImg: null,
+    enderecoImg: null
+  });
 
   // Lista de cidades do Paraná
   const cidadesBrasileiras = [
@@ -577,6 +585,12 @@ Para exercer seus direitos ou esclarecer dúvidas sobre o tratamento de seus dad
         const newErrors = { ...errors };
         delete newErrors[name];
         setErrors(newErrors);
+        const file = e.target.files[0];
+        if (file) {
+          const url = URL.createObjectURL(file);
+          setPreviews(prev => ({ ...prev, [name]: url }));
+          showNotification('Imagem carregada com sucesso!', 'success');
+        }
       }
     } else if (type === 'checkbox') {
       setFormData({ ...formData, [name]: checked });
@@ -623,9 +637,17 @@ Para exercer seus direitos ou esclarecer dúvidas sobre o tratamento de seus dad
         enderecoImg: null,
         aceiteLGPD: false
       });
+      setPreviews({
+        cpfImg: null,
+        pisImg: null,
+        rgFrenteImg: null,
+        rgVersoImg: null,
+        enderecoImg: null
+      });
       setErrors({});
       setCidadeSearch("");
       setShowConfirmation(true);
+      showNotification('Cadastro enviado com sucesso!', 'success');
       
       // Esconder confirmação após 5 segundos
       setTimeout(() => {
@@ -763,80 +785,130 @@ Para exercer seus direitos ou esclarecer dúvidas sobre o tratamento de seus dad
 
           <div className="form-group">
             <label htmlFor="cpfImg">Foto do CPF *</label>
-            <input
-              id="cpfImg"
-              name="cpfImg"
-              type="file"
-              accept="image/jpeg,image/jpg,image/png"
-              onChange={handleChange}
-              required
-              className={`file-input ${errors.cpfImg ? "error" : ""}`}
-              aria-describedby={errors.cpfImg ? "cpfImg-error" : undefined}
-            />
+            <div className="image-upload">
+              <input
+                id="cpfImg"
+                name="cpfImg"
+                type="file"
+                accept="image/jpeg,image/jpg,image/png"
+                onChange={handleChange}
+                required
+                className={`file-input-hidden ${errors.cpfImg ? "error" : ""}`}
+                aria-describedby={errors.cpfImg ? "cpfImg-error" : undefined}
+              />
+              <button type="button" className="image-button" onClick={() => document.getElementById('cpfImg').click()}>
+                Salvar imagem
+              </button>
+              {previews.cpfImg && (
+                <div className="image-preview">
+                  <img src={previews.cpfImg} alt="Pré-visualização CPF" />
+                </div>
+              )}
+            </div>
             {errors.cpfImg && <span id="cpfImg-error" className="error-message">{errors.cpfImg}</span>}
             <small className="file-help">Formatos aceitos: JPG, PNG. Máximo 5MB.</small>
           </div>
 
           <div className="form-group">
             <label htmlFor="pisImg">Foto do PIS *</label>
-            <input
-              id="pisImg"
-              name="pisImg"
-              type="file"
-              accept="image/jpeg,image/jpg,image/png"
-              onChange={handleChange}
-              required
-              className={`file-input ${errors.pisImg ? "error" : ""}`}
-              aria-describedby={errors.pisImg ? "pisImg-error" : undefined}
-            />
+            <div className="image-upload">
+              <input
+                id="pisImg"
+                name="pisImg"
+                type="file"
+                accept="image/jpeg,image/jpg,image/png"
+                onChange={handleChange}
+                required
+                className={`file-input-hidden ${errors.pisImg ? "error" : ""}`}
+                aria-describedby={errors.pisImg ? "pisImg-error" : undefined}
+              />
+              <button type="button" className="image-button" onClick={() => document.getElementById('pisImg').click()}>
+                Salvar imagem
+              </button>
+              {previews.pisImg && (
+                <div className="image-preview">
+                  <img src={previews.pisImg} alt="Pré-visualização PIS" />
+                </div>
+              )}
+            </div>
             {errors.pisImg && <span id="pisImg-error" className="error-message">{errors.pisImg}</span>}
             <small className="file-help">Formatos aceitos: JPG, PNG. Máximo 5MB.</small>
           </div>
 
           <div className="form-group">
             <label htmlFor="rgFrenteImg">Foto do RG (Frente) *</label>
-            <input
-              id="rgFrenteImg"
-              name="rgFrenteImg"
-              type="file"
-              accept="image/jpeg,image/jpg,image/png"
-              onChange={handleChange}
-              required
-              className={`file-input ${errors.rgFrenteImg ? "error" : ""}`}
-              aria-describedby={errors.rgFrenteImg ? "rgFrenteImg-error" : undefined}
-            />
+            <div className="image-upload">
+              <input
+                id="rgFrenteImg"
+                name="rgFrenteImg"
+                type="file"
+                accept="image/jpeg,image/jpg,image/png"
+                onChange={handleChange}
+                required
+                className={`file-input-hidden ${errors.rgFrenteImg ? "error" : ""}`}
+                aria-describedby={errors.rgFrenteImg ? "rgFrenteImg-error" : undefined}
+              />
+              <button type="button" className="image-button" onClick={() => document.getElementById('rgFrenteImg').click()}>
+                Salvar imagem
+              </button>
+              {previews.rgFrenteImg && (
+                <div className="image-preview">
+                  <img src={previews.rgFrenteImg} alt="Pré-visualização RG Frente" />
+                </div>
+              )}
+            </div>
             {errors.rgFrenteImg && <span id="rgFrenteImg-error" className="error-message">{errors.rgFrenteImg}</span>}
             <small className="file-help">Formatos aceitos: JPG, PNG. Máximo 5MB.</small>
           </div>
 
           <div className="form-group">
             <label htmlFor="rgVersoImg">Foto do RG (Verso) *</label>
-            <input
-              id="rgVersoImg"
-              name="rgVersoImg"
-              type="file"
-              accept="image/jpeg,image/jpg,image/png"
-              onChange={handleChange}
-              required
-              className={`file-input ${errors.rgVersoImg ? "error" : ""}`}
-              aria-describedby={errors.rgVersoImg ? "rgVersoImg-error" : undefined}
-            />
+            <div className="image-upload">
+              <input
+                id="rgVersoImg"
+                name="rgVersoImg"
+                type="file"
+                accept="image/jpeg,image/jpg,image/png"
+                onChange={handleChange}
+                required
+                className={`file-input-hidden ${errors.rgVersoImg ? "error" : ""}`}
+                aria-describedby={errors.rgVersoImg ? "rgVersoImg-error" : undefined}
+              />
+              <button type="button" className="image-button" onClick={() => document.getElementById('rgVersoImg').click()}>
+                Salvar imagem
+              </button>
+              {previews.rgVersoImg && (
+                <div className="image-preview">
+                  <img src={previews.rgVersoImg} alt="Pré-visualização RG Verso" />
+                </div>
+              )}
+            </div>
             {errors.rgVersoImg && <span id="rgVersoImg-error" className="error-message">{errors.rgVersoImg}</span>}
             <small className="file-help">Formatos aceitos: JPG, PNG. Máximo 5MB.</small>
           </div>
 
           <div className="form-group">
             <label htmlFor="enderecoImg">Foto do Comprovante de Endereço *</label>
-            <input
-              id="enderecoImg"
-              name="enderecoImg"
-              type="file"
-              accept="image/jpeg,image/jpg,image/png"
-              onChange={handleChange}
-              required
-              className={`file-input ${errors.enderecoImg ? "error" : ""}`}
-              aria-describedby={errors.enderecoImg ? "enderecoImg-error" : undefined}
-            />
+            <div className="image-upload">
+              <input
+                id="enderecoImg"
+                name="enderecoImg"
+                type="file"
+                accept="image/jpeg,image/jpg,image/png"
+                onChange={handleChange}
+                required
+                className={`file-input-hidden ${errors.enderecoImg ? "error" : ""}`}
+                aria-describedby={errors.enderecoImg ? "enderecoImg-error" : undefined}
+              />
+              <button type="button" className="image-button" onClick={() => document.getElementById('enderecoImg').click()}>
+                Salvar imagem
+              </button>
+              {previews.enderecoImg && (
+                <div className="image-preview">
+                  <img src={previews.enderecoImg} alt="Pré-visualização Endereço" />
+                </div>
+              )}
+            </div>
             {errors.enderecoImg && <span id="enderecoImg-error" className="error-message">{errors.enderecoImg}</span>}
             <small className="file-help">Formatos aceitos: JPG, PNG. Máximo 5MB.</small>
           </div>
