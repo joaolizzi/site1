@@ -1125,6 +1125,25 @@ input.error {
   box-shadow: var(--shadow-sm);
 }
 
+.save-button {
+  background: #2563eb;
+  color: var(--white);
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  transition: var(--transition-normal);
+  border: none;
+  box-shadow: var(--shadow-sm);
+}
+
+.save-button:hover {
+  background: #1d4ed8;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
 /* ========= Modal de Confirmação ========= */
 .confirm-modal {
   max-width: 500px;

@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useCandidates } from '../hooks/useCandidates';
 import { useAuth } from '../hooks/useAuth';
 import SyncStatus from './SyncStatus';
+import { showNotification } from '../utils/errorHandler';
 import ConfirmModal from './ConfirmModal';
 import * as XLSX from 'xlsx';
 
@@ -171,6 +172,20 @@ export default function AdminPanel() {
     setDeleteModal({ isOpen: false, candidate: null });
   };
 
+  const saveImage = (url, filename) => {
+    try {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      showNotification('Imagem salva com sucesso!', 'success');
+    } catch (e) {
+      showNotification('Falha ao salvar a imagem', 'error');
+    }
+  };
+
   if (loading) {
     return (
       <div className="admin-panel">
@@ -298,84 +313,134 @@ export default function AdminPanel() {
                 <td>
                   <div className="documents">
                     {c.cpfImgUrl && (
-                      <img 
-                        src={c.cpfImgUrl} 
-                        alt='CPF' 
-                        className="document-thumb"
-                        onClick={() => setPreviewImg(c.cpfImgUrl)}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            setPreviewImg(c.cpfImgUrl);
-                          }
-                        }}
-                        title="CPF"
-                      />
+                      <>
+                        <img 
+                          src={c.cpfImgUrl} 
+                          alt='CPF' 
+                          className="document-thumb"
+                          onClick={() => setPreviewImg(c.cpfImgUrl)}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              setPreviewImg(c.cpfImgUrl);
+                            }
+                          }}
+                          title="CPF"
+                        />
+                        <button
+                          type="button"
+                          className="save-button"
+                          onClick={() => saveImage(c.cpfImgUrl, `${(c.nome||'documento').replace(/\\s+/g,'_')}_CPF.jpg`)}
+                          title="Salvar imagem CPF"
+                        >
+                          Salvar CPF
+                        </button>
+                      </>
                     )}
                     {c.pisImgUrl && (
-                      <img 
-                        src={c.pisImgUrl} 
-                        alt='PIS' 
-                        className="document-thumb"
-                        onClick={() => setPreviewImg(c.pisImgUrl)}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            setPreviewImg(c.pisImgUrl);
-                          }
-                        }}
-                        title="PIS"
-                      />
+                      <>
+                        <img 
+                          src={c.pisImgUrl} 
+                          alt='PIS' 
+                          className="document-thumb"
+                          onClick={() => setPreviewImg(c.pisImgUrl)}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              setPreviewImg(c.pisImgUrl);
+                            }
+                          }}
+                          title="PIS"
+                        />
+                        <button
+                          type="button"
+                          className="save-button"
+                          onClick={() => saveImage(c.pisImgUrl, `${(c.nome||'documento').replace(/\\s+/g,'_')}_PIS.jpg`)}
+                          title="Salvar imagem PIS"
+                        >
+                          Salvar PIS
+                        </button>
+                      </>
                     )}
                     {c.rgFrenteImgUrl && (
-                      <img 
-                        src={c.rgFrenteImgUrl} 
-                        alt='RG Frente' 
-                        className="document-thumb"
-                        onClick={() => setPreviewImg(c.rgFrenteImgUrl)}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            setPreviewImg(c.rgFrenteImgUrl);
-                          }
-                        }}
-                        title="RG Frente"
-                      />
+                      <>
+                        <img 
+                          src={c.rgFrenteImgUrl} 
+                          alt='RG Frente' 
+                          className="document-thumb"
+                          onClick={() => setPreviewImg(c.rgFrenteImgUrl)}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              setPreviewImg(c.rgFrenteImgUrl);
+                            }
+                          }}
+                          title="RG Frente"
+                        />
+                        <button
+                          type="button"
+                          className="save-button"
+                          onClick={() => saveImage(c.rgFrenteImgUrl, `${(c.nome||'documento').replace(/\\s+/g,'_')}_RG_FRENTE.jpg`)}
+                          title="Salvar imagem RG Frente"
+                        >
+                          Salvar RG Frente
+                        </button>
+                      </>
                     )}
                     {c.rgVersoImgUrl && (
-                      <img 
-                        src={c.rgVersoImgUrl} 
-                        alt='RG Verso' 
-                        className="document-thumb"
-                        onClick={() => setPreviewImg(c.rgVersoImgUrl)}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            setPreviewImg(c.rgVersoImgUrl);
-                          }
-                        }}
-                        title="RG Verso"
-                      />
+                      <>
+                        <img 
+                          src={c.rgVersoImgUrl} 
+                          alt='RG Verso' 
+                          className="document-thumb"
+                          onClick={() => setPreviewImg(c.rgVersoImgUrl)}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              setPreviewImg(c.rgVersoImgUrl);
+                            }
+                          }}
+                          title="RG Verso"
+                        />
+                        <button
+                          type="button"
+                          className="save-button"
+                          onClick={() => saveImage(c.rgVersoImgUrl, `${(c.nome||'documento').replace(/\\s+/g,'_')}_RG_VERSO.jpg`)}
+                          title="Salvar imagem RG Verso"
+                        >
+                          Salvar RG Verso
+                        </button>
+                      </>
                     )}
                     {c.enderecoImgUrl && (
-                      <img 
-                        src={c.enderecoImgUrl} 
-                        alt='Endereço' 
-                        className="document-thumb"
-                        onClick={() => setPreviewImg(c.enderecoImgUrl)}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            setPreviewImg(c.enderecoImgUrl);
-                          }
-                        }}
-                        title="Comprovante de Endereço"
-                      />
+                      <>
+                        <img 
+                          src={c.enderecoImgUrl} 
+                          alt='Endereço' 
+                          className="document-thumb"
+                          onClick={() => setPreviewImg(c.enderecoImgUrl)}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              setPreviewImg(c.enderecoImgUrl);
+                            }
+                          }}
+                          title="Comprovante de Endereço"
+                        />
+                        <button
+                          type="button"
+                          className="save-button"
+                          onClick={() => saveImage(c.enderecoImgUrl, `${(c.nome||'documento').replace(/\\s+/g,'_')}_ENDERECO.jpg`)}
+                          title="Salvar imagem Endereço"
+                        >
+                          Salvar Endereço
+                        </button>
+                      </>
                     )}
                   </div>
                 </td>
