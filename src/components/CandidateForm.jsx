@@ -873,6 +873,7 @@ Para exercer seus direitos ou esclarecer dúvidas sobre o tratamento de seus dad
             type="submit" 
             disabled={isSubmitting || Object.keys(errors).length > 0}
             className="submit-button"
+            onClick={() => showNotification('Candidatura enviada!', 'success')}
             aria-describedby="submit-help"
           >
             {isSubmitting ? "Enviando..." : "Enviar Candidatura"}
