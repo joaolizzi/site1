@@ -933,7 +933,7 @@ Para exercer seus direitos ou esclarecer dúvidas sobre o tratamento de seus dad
             className="submit-button"
             onClick={() => {
               setShowFullScreenSuccess(true);
-              setTimeout(() => setShowFullScreenSuccess(false), 5000);
+              setTimeout(() => setShowFullScreenSuccess(false), 20000);
             }}
             aria-describedby="submit-help"
           >
