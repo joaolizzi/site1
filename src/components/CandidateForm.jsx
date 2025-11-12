@@ -30,6 +30,7 @@ export default function CandidateForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [cidadeSearch, setCidadeSearch] = useState("");
   const [showCityDropdown, setShowCityDropdown] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
   // prévias removidas (somente Admin pode salvar/baixar imagens)
 
   // Lista de cidades do Paraná
@@ -617,6 +618,7 @@ Para exercer seus direitos ou esclarecer dúvidas sobre o tratamento de seus dad
     e.preventDefault();
     
     // Validar todos os campos
+    setSuccessMessage("");
     const hasErrors = Object.keys(errors).length > 0;
     if (hasErrors) {
       return;
@@ -626,7 +628,7 @@ Para exercer seus direitos ou esclarecer dúvidas sobre o tratamento de seus dad
     const success = await addCandidate(formData);
     
     if (success) {
-      window.alert('Candidatura enviada com sucesso!');
+      setSuccessMessage("Candidatura enviada com sucesso! Você receberá um retorno em breve.");
       setFormData({
         nome: "",
         idade: "",
@@ -643,6 +645,9 @@ Para exercer seus direitos ou esclarecer dúvidas sobre o tratamento de seus dad
       setFileStatus(createInitialFileStatus());
       setErrors({});
       setCidadeSearch("");
+      setTimeout(() => setSuccessMessage(""), 10000);
+    } else {
+      setSuccessMessage("");
     }
     
     setIsSubmitting(false);
@@ -654,7 +659,13 @@ Para exercer seus direitos ou esclarecer dúvidas sobre o tratamento de seus dad
       <div className="card">
         <h1>Formulário de Candidato</h1>
         
-        <form onSubmit={handleSubmit} className="candidate-form">
+        <form onSubmit={handleSubmit} className="candidate-form" aria-live="polite">
+          {successMessage && (
+            <div className="form-success-banner" role="status">
+              <span className="form-success-icon" aria-hidden="true">✅</span>
+              <span>{successMessage}</span>
+            </div>
+          )}
           <div className="form-group">
             <label htmlFor="nome">Nome Completo *</label>
             <input
