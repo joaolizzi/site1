@@ -5,7 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 import SyncStatus from './SyncStatus';
 import { showNotification } from '../utils/errorHandler';
 import ConfirmModal from './ConfirmModal';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs/dist/exceljs.min.js';
 
 function downloadCSV(rows) {
   if (!rows.length) return;
@@ -23,89 +23,182 @@ function downloadCSV(rows) {
   URL.revokeObjectURL(url);
 }
 
-function downloadExcel(candidates) {
+const DOCUMENT_DEFINITIONS = [
+  { key: 'cpfImgUrl', label: 'CPF' },
+  { key: 'pisImgUrl', label: 'PIS' },
+  { key: 'rgFrenteImgUrl', label: 'RG Frente' },
+  { key: 'rgVersoImgUrl', label: 'RG Verso' },
+  { key: 'enderecoImgUrl', label: 'Endereço' }
+];
+
+const MIME_TO_EXTENSION = {
+  'image/jpeg': 'jpeg',
+  'image/jpg': 'jpeg',
+  'image/png': 'png'
+};
+
+async function fetchImageData(url) {
+  const response = await fetch(url, { mode: 'cors' });
+  if (!response.ok) {
+    throw new Error('Falha ao baixar imagem');
+  }
+  const blob = await response.blob();
+  const arrayBuffer = await blob.arrayBuffer();
+  const extension = MIME_TO_EXTENSION[blob.type] || 'jpeg';
+  return {
+    buffer: new Uint8Array(arrayBuffer),
+    extension
+  };
+}
+
+function formatTimestamp(timestamp) {
+  if (!timestamp) return '';
+  if (typeof timestamp.toDate === 'function') {
+    return timestamp.toDate().toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+  return '';
+}
+
+async function downloadExcelWithImages(candidates) {
   if (!candidates.length) return;
 
-  // Preparar dados para exportação
-  const exportData = candidates.map(c => {
-    // Formatar data se existir
-    const formatDate = (timestamp) => {
-      if (!timestamp) return '';
-      if (timestamp.toDate) {
-        // Firestore timestamp
-        return timestamp.toDate().toLocaleDateString('pt-BR', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        });
-      }
-      return '';
-    };
+  const workbook = new ExcelJS.Workbook();
+  workbook.created = new Date();
+  workbook.modified = new Date();
+  workbook.calcProperties.fullCalcOnLoad = true;
 
-    // Listar documentos disponíveis
-    const documentos = [];
-    if (c.cpfImgUrl) documentos.push('CPF');
-    if (c.pisImgUrl) documentos.push('PIS');
-    if (c.rgFrenteImgUrl) documentos.push('RG Frente');
-    if (c.rgVersoImgUrl) documentos.push('RG Verso');
-    if (c.enderecoImgUrl) documentos.push('Endereço');
-
-    return {
-      'Nome': c.nome || '',
-      'CPF': c.cpf || '',
-      'Idade': c.idade || '',
-      'Telefone': c.telefone || '',
-      'Cidade': c.cidade || 'Sem cidade',
-      'Status': c.status || 'Backlog',
-      'Documentos': documentos.join(', '),
-      'Data de Cadastro': formatDate(c.createdAt),
-      'Última Atualização': formatDate(c.updatedAt)
-    };
+  const candidateSheet = workbook.addWorksheet('Candidatos', {
+    views: [{ state: 'frozen', ySplit: 1 }]
   });
 
-  // Criar workbook e worksheet
-  const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.json_to_sheet(exportData);
-
-  // Definir larguras das colunas para melhor visualização e alinhamento
-  ws['!cols'] = [
-    { wch: 35 }, // Nome
-    { wch: 18 }, // CPF
-    { wch: 8 },  // Idade
-    { wch: 18 }, // Telefone
-    { wch: 25 }, // Cidade
-    { wch: 15 }, // Status
-    { wch: 50 }, // Documentos
-    { wch: 22 }, // Data de Cadastro
-    { wch: 22 }  // Última Atualização
+  candidateSheet.columns = [
+    { header: 'Nome', key: 'nome', width: 35 },
+    { header: 'CPF', key: 'cpf', width: 18 },
+    { header: 'Idade', key: 'idade', width: 8 },
+    { header: 'Telefone', key: 'telefone', width: 18 },
+    { header: 'Cidade', key: 'cidade', width: 25 },
+    { header: 'Status', key: 'status', width: 15 },
+    { header: 'Documentos', key: 'documentos', width: 45 },
+    { header: 'Data de Cadastro', key: 'criado', width: 22 },
+    { header: 'Última Atualização', key: 'atualizado', width: 22 }
   ];
 
-  // Congelar primeira linha (cabeçalho) usando views
-  ws['!views'] = [{ state: 'frozen', ySplit: 1 }];
+  candidateSheet.getRow(1).font = { bold: true };
 
-  // Adicionar filtro automático na primeira linha
-  if (exportData.length > 0) {
-    const numCols = Object.keys(exportData[0]).length;
-    const range = XLSX.utils.encode_range({ 
-      s: { c: 0, r: 0 }, 
-      e: { c: numCols - 1, r: exportData.length } 
+  candidates.forEach((candidate) => {
+    const documentos = DOCUMENT_DEFINITIONS
+      .filter(doc => candidate[doc.key])
+      .map(doc => doc.label)
+      .join(', ');
+
+    candidateSheet.addRow({
+      nome: candidate.nome || '',
+      cpf: candidate.cpf || '',
+      idade: candidate.idade || '',
+      telefone: candidate.telefone || '',
+      cidade: candidate.cidade || 'Sem cidade',
+      status: candidate.status || 'Backlog',
+      documentos,
+      criado: formatTimestamp(candidate.createdAt),
+      atualizado: formatTimestamp(candidate.updatedAt)
     });
-    ws['!autofilter'] = { ref: range };
+  });
+
+  candidateSheet.autoFilter = 'A1:I1';
+
+  const documentSheet = workbook.addWorksheet('Documentos', {
+    views: [{ state: 'frozen', ySplit: 1 }]
+  });
+
+  documentSheet.columns = [
+    { header: 'Candidato', key: 'candidato', width: 35 },
+    { header: 'Documento', key: 'documento', width: 22 },
+    { header: 'Imagem', key: 'imagem', width: 45 },
+    { header: 'Link', key: 'link', width: 50 }
+  ];
+
+  documentSheet.getRow(1).font = { bold: true };
+  documentSheet.getColumn(4).style = { font: { color: { argb: 'FF1F4E79' }, underline: true } };
+
+  const imageCache = new Map();
+
+  for (const candidate of candidates) {
+    for (const docDefinition of DOCUMENT_DEFINITIONS) {
+      const url = candidate[docDefinition.key];
+      if (!url) continue;
+
+      const row = documentSheet.addRow({
+        candidato: candidate.nome || '',
+        documento: docDefinition.label,
+        imagem: '',
+        link: ''
+      });
+
+      const rowNumber = row.number;
+      documentSheet.getCell(`D${rowNumber}`).value = {
+        text: 'Abrir documento',
+        hyperlink: url,
+        tooltip: `Abrir ${docDefinition.label}`
+      };
+      row.alignment = { vertical: 'middle' };
+
+      try {
+        let imageData = imageCache.get(url);
+        if (!imageData) {
+          imageData = await fetchImageData(url);
+          imageCache.set(url, imageData);
+        }
+        const imageId = workbook.addImage({
+          buffer: imageData.buffer,
+          extension: imageData.extension
+        });
+        documentSheet.addImage(imageId, {
+          tl: { col: 2, row: rowNumber - 1 + 0.15 },
+          ext: { width: 220, height: 130 }
+        });
+        row.height = Math.max(row.height || 0, 110);
+        documentSheet.getCell(`C${rowNumber}`).value = '';
+      } catch (error) {
+        documentSheet.getCell(`C${rowNumber}`).value = 'Imagem indisponível';
+      }
+    }
   }
 
-  // Adicionar worksheet ao workbook
-  XLSX.utils.book_append_sheet(wb, ws, 'Candidatos');
+  documentSheet.autoFilter = 'A1:D1';
 
-  // Gerar nome do arquivo com data e hora
+  if (documentSheet.rowCount === 1) {
+    documentSheet.addRow({
+      candidato: 'Nenhum documento disponível',
+      documento: '',
+      imagem: '',
+      link: ''
+    });
+  }
+
   const now = new Date();
   const dateStr = now.toLocaleDateString('pt-BR').replace(/\//g, '-');
   const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }).replace(/:/g, '');
   const fileName = `candidatos_${dateStr}_${timeStr}.xlsx`;
 
-  // Exportar arquivo
-  XLSX.writeFile(wb, fileName);
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  });
+
+  const objectUrl = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = objectUrl;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(objectUrl);
 }
 
 export default function AdminPanel() {
@@ -116,6 +209,7 @@ export default function AdminPanel() {
   const [search, setSearch] = useState('');
   const [previewImg, setPreviewImg] = useState(null);
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, candidate: null });
+  const [isExportingExcel, setIsExportingExcel] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -289,12 +383,24 @@ export default function AdminPanel() {
             Exportar CSV ({filteredCandidates.length})
           </button>
           <button 
-            onClick={() => downloadExcel(filteredCandidates)}
+            onClick={async () => {
+              try {
+                setIsExportingExcel(true);
+                await downloadExcelWithImages(filteredCandidates);
+                showNotification('Exportação para Excel concluída!', 'success');
+              } catch (error) {
+                console.error('Erro ao exportar Excel:', error);
+                showNotification('Falha ao exportar Excel. Tente novamente.', 'error');
+              } finally {
+                setIsExportingExcel(false);
+              }
+            }}
             className="export-button export-excel"
-            disabled={filteredCandidates.length === 0}
+            disabled={filteredCandidates.length === 0 || isExportingExcel}
             title="Exportar para Excel com formatação"
+            aria-busy={isExportingExcel}
           >
-            Exportar Excel ({filteredCandidates.length})
+            {isExportingExcel ? 'Exportando...' : `Exportar Excel (${filteredCandidates.length})`}
           </button>
         </div>
       </div>

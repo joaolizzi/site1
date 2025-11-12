@@ -1171,6 +1171,51 @@ input.error {
   transform: none;
   box-shadow: var(--shadow-sm);
 }
+
+/* ========= Tela cheia de sucesso de envio ========= */
+.full-screen-success {
+  position: fixed;
+  inset: 0;
+  background: rgba(16, 185, 129, 0.96); /* verde */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: successFadeIn 200ms ease-out forwards;
+}
+
+.full-screen-success-content {
+  text-align: center;
+  color: white;
+  transform: translateY(0);
+  animation: successPop 250ms ease-out forwards;
+}
+
+.full-screen-success-icon {
+  font-size: 80px;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 6px 16px rgba(0,0,0,0.25));
+}
+
+.full-screen-success h2 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+
+@keyframes successFadeIn {
+  from { opacity: 0; }
+  10% { opacity: 1; }
+  80% { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes successPop {
+  from { transform: scale(0.95); }
+  to { transform: scale(1); }
+}
 /* ========= Modal de Confirmação ========= */
 .confirm-modal {
   max-width: 500px;
@@ -1502,4 +1547,35 @@ input.error {
   width: auto;
   border-radius: 8px;
   object-fit: cover;
+}
+
+/* ========= Indicador de Arquivo Carregado ========= */
+.file-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.file-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background-color: rgba(39, 174, 96, 0.14);
+  border: 1px solid rgba(39, 174, 96, 0.35);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1f7a3d;
+  letter-spacing: 0.01em;
+}
+
+.file-status-icon {
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.file-status.verified {
+  color: #1f7a3d;
 }

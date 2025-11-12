@@ -5,7 +5,7 @@ import { showNotification } from "../utils/errorHandler";
 
 export default function CandidateForm() {
   const { addCandidate } = useCandidates();
-  const [formData, setFormData] = useState({
+  const createInitialFormData = () => ({
     nome: "",
     idade: "",
     telefone: "",
@@ -18,11 +18,21 @@ export default function CandidateForm() {
     enderecoImg: null,
     aceiteLGPD: false
   });
+  const createInitialFileStatus = () => ({
+    cpfImg: null,
+    pisImg: null,
+    rgFrenteImg: null,
+    rgVersoImg: null,
+    enderecoImg: null
+  });
+  const [formData, setFormData] = useState(() => createInitialFormData());
+  const [fileStatus, setFileStatus] = useState(() => createInitialFileStatus());
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [cidadeSearch, setCidadeSearch] = useState("");
   const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showFullScreenSuccess, setShowFullScreenSuccess] = useState(false);
   // prévias removidas (somente Admin pode salvar/baixar imagens)
 
   // Lista de cidades do Paraná
@@ -570,15 +580,22 @@ Para exercer seus direitos ou esclarecer dúvidas sobre o tratamento de seus dad
     const { name, value, type, checked } = e.target;
     
     if (name === "cpfImg" || name === "pisImg" || name === "rgFrenteImg" || name === "rgVersoImg" || name === "enderecoImg") {
-      setFormData({ ...formData, [name]: e.target.files[0] });
+      const file = e.target.files?.[0] || null;
+      setFormData({ ...formData, [name]: file });
+      if (!file) {
+        setFileStatus(prev => ({ ...prev, [name]: null }));
+        return;
+      }
       // Validar arquivo
-      const fileValidation = validateFile(e.target.files[0], 5 * 1024 * 1024, ['image/jpeg', 'image/png', 'image/jpg']);
+      const fileValidation = validateFile(file, 5 * 1024 * 1024, ['image/jpeg', 'image/png', 'image/jpg']);
       if (!fileValidation.valid) {
         setErrors({ ...errors, [name]: fileValidation.error });
+        setFileStatus(prev => ({ ...prev, [name]: 'error' }));
       } else {
         const newErrors = { ...errors };
         delete newErrors[name];
         setErrors(newErrors);
+        setFileStatus(prev => ({ ...prev, [name]: 'verified' }));
       }
     } else if (type === 'checkbox') {
       setFormData({ ...formData, [name]: checked });
@@ -625,6 +642,7 @@ Para exercer seus direitos ou esclarecer dúvidas sobre o tratamento de seus dad
         enderecoImg: null,
         aceiteLGPD: false
       });
+      setFileStatus(createInitialFileStatus());
       setErrors({});
       setCidadeSearch("");
       setShowConfirmation(true);
@@ -766,80 +784,120 @@ Para exercer seus direitos ou esclarecer dúvidas sobre o tratamento de seus dad
 
           <div className="form-group">
             <label htmlFor="cpfImg">Foto do CPF *</label>
-            <input
-              id="cpfImg"
-              name="cpfImg"
-              type="file"
-              accept="image/jpeg,image/jpg,image/png"
-              onChange={handleChange}
-              required
-              className={`file-input ${errors.cpfImg ? "error" : ""}`}
-              aria-describedby={errors.cpfImg ? "cpfImg-error" : undefined}
-            />
+            <div className="file-input-wrapper">
+              <input
+                id="cpfImg"
+                name="cpfImg"
+                type="file"
+                accept="image/jpeg,image/jpg,image/png"
+                onChange={handleChange}
+                required
+                className={`file-input ${errors.cpfImg ? "error" : ""}`}
+                aria-describedby={errors.cpfImg ? "cpfImg-error" : undefined}
+              />
+              {fileStatus.cpfImg === 'verified' && !errors.cpfImg && (
+                <span className="file-status verified" role="status" aria-live="polite">
+                  <span className="file-status-icon" aria-hidden="true">✔</span>
+                  Verificado
+                </span>
+              )}
+            </div>
             {errors.cpfImg && <span id="cpfImg-error" className="error-message">{errors.cpfImg}</span>}
             <small className="file-help">Formatos aceitos: JPG, PNG. Máximo 5MB.</small>
           </div>
 
           <div className="form-group">
             <label htmlFor="pisImg">Foto do PIS *</label>
-            <input
-              id="pisImg"
-              name="pisImg"
-              type="file"
-              accept="image/jpeg,image/jpg,image/png"
-              onChange={handleChange}
-              required
-              className={`file-input ${errors.pisImg ? "error" : ""}`}
-              aria-describedby={errors.pisImg ? "pisImg-error" : undefined}
-            />
+            <div className="file-input-wrapper">
+              <input
+                id="pisImg"
+                name="pisImg"
+                type="file"
+                accept="image/jpeg,image/jpg,image/png"
+                onChange={handleChange}
+                required
+                className={`file-input ${errors.pisImg ? "error" : ""}`}
+                aria-describedby={errors.pisImg ? "pisImg-error" : undefined}
+              />
+              {fileStatus.pisImg === 'verified' && !errors.pisImg && (
+                <span className="file-status verified" role="status" aria-live="polite">
+                  <span className="file-status-icon" aria-hidden="true">✔</span>
+                  Verificado
+                </span>
+              )}
+            </div>
             {errors.pisImg && <span id="pisImg-error" className="error-message">{errors.pisImg}</span>}
             <small className="file-help">Formatos aceitos: JPG, PNG. Máximo 5MB.</small>
           </div>
 
           <div className="form-group">
             <label htmlFor="rgFrenteImg">Foto do RG (Frente) *</label>
-            <input
-              id="rgFrenteImg"
-              name="rgFrenteImg"
-              type="file"
-              accept="image/jpeg,image/jpg,image/png"
-              onChange={handleChange}
-              required
-              className={`file-input ${errors.rgFrenteImg ? "error" : ""}`}
-              aria-describedby={errors.rgFrenteImg ? "rgFrenteImg-error" : undefined}
-            />
+            <div className="file-input-wrapper">
+              <input
+                id="rgFrenteImg"
+                name="rgFrenteImg"
+                type="file"
+                accept="image/jpeg,image/jpg,image/png"
+                onChange={handleChange}
+                required
+                className={`file-input ${errors.rgFrenteImg ? "error" : ""}`}
+                aria-describedby={errors.rgFrenteImg ? "rgFrenteImg-error" : undefined}
+              />
+              {fileStatus.rgFrenteImg === 'verified' && !errors.rgFrenteImg && (
+                <span className="file-status verified" role="status" aria-live="polite">
+                  <span className="file-status-icon" aria-hidden="true">✔</span>
+                  Verificado
+                </span>
+              )}
+            </div>
             {errors.rgFrenteImg && <span id="rgFrenteImg-error" className="error-message">{errors.rgFrenteImg}</span>}
             <small className="file-help">Formatos aceitos: JPG, PNG. Máximo 5MB.</small>
           </div>
 
           <div className="form-group">
             <label htmlFor="rgVersoImg">Foto do RG (Verso) *</label>
-            <input
-              id="rgVersoImg"
-              name="rgVersoImg"
-              type="file"
-              accept="image/jpeg,image/jpg,image/png"
-              onChange={handleChange}
-              required
-              className={`file-input ${errors.rgVersoImg ? "error" : ""}`}
-              aria-describedby={errors.rgVersoImg ? "rgVersoImg-error" : undefined}
-            />
+            <div className="file-input-wrapper">
+              <input
+                id="rgVersoImg"
+                name="rgVersoImg"
+                type="file"
+                accept="image/jpeg,image/jpg,image/png"
+                onChange={handleChange}
+                required
+                className={`file-input ${errors.rgVersoImg ? "error" : ""}`}
+                aria-describedby={errors.rgVersoImg ? "rgVersoImg-error" : undefined}
+              />
+              {fileStatus.rgVersoImg === 'verified' && !errors.rgVersoImg && (
+                <span className="file-status verified" role="status" aria-live="polite">
+                  <span className="file-status-icon" aria-hidden="true">✔</span>
+                  Verificado
+                </span>
+              )}
+            </div>
             {errors.rgVersoImg && <span id="rgVersoImg-error" className="error-message">{errors.rgVersoImg}</span>}
             <small className="file-help">Formatos aceitos: JPG, PNG. Máximo 5MB.</small>
           </div>
 
           <div className="form-group">
             <label htmlFor="enderecoImg">Foto do Comprovante de Endereço *</label>
-            <input
-              id="enderecoImg"
-              name="enderecoImg"
-              type="file"
-              accept="image/jpeg,image/jpg,image/png"
-              onChange={handleChange}
-              required
-              className={`file-input ${errors.enderecoImg ? "error" : ""}`}
-              aria-describedby={errors.enderecoImg ? "enderecoImg-error" : undefined}
-            />
+            <div className="file-input-wrapper">
+              <input
+                id="enderecoImg"
+                name="enderecoImg"
+                type="file"
+                accept="image/jpeg,image/jpg,image/png"
+                onChange={handleChange}
+                required
+                className={`file-input ${errors.enderecoImg ? "error" : ""}`}
+                aria-describedby={errors.enderecoImg ? "enderecoImg-error" : undefined}
+              />
+              {fileStatus.enderecoImg === 'verified' && !errors.enderecoImg && (
+                <span className="file-status verified" role="status" aria-live="polite">
+                  <span className="file-status-icon" aria-hidden="true">✔</span>
+                  Verificado
+                </span>
+              )}
+            </div>
             {errors.enderecoImg && <span id="enderecoImg-error" className="error-message">{errors.enderecoImg}</span>}
             <small className="file-help">Formatos aceitos: JPG, PNG. Máximo 5MB.</small>
           </div>
@@ -873,7 +931,10 @@ Para exercer seus direitos ou esclarecer dúvidas sobre o tratamento de seus dad
             type="submit" 
             disabled={isSubmitting || Object.keys(errors).length > 0}
             className="submit-button"
-            onClick={() => showNotification('Candidatura enviada!', 'success')}
+            onClick={() => {
+              setShowFullScreenSuccess(true);
+              setTimeout(() => setShowFullScreenSuccess(false), 5000);
+            }}
             aria-describedby="submit-help"
           >
             {isSubmitting ? "Enviando..." : "Enviar Candidatura"}
@@ -885,6 +946,14 @@ Para exercer seus direitos ou esclarecer dúvidas sobre o tratamento de seus dad
       </div>
 
 
+      {showFullScreenSuccess && (
+        <div className="full-screen-success" role="status" aria-live="polite">
+          <div className="full-screen-success-content">
+            <div className="full-screen-success-icon">✅</div>
+            <h2>CANDIDATURA ENVIADA</h2>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
