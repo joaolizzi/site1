@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useCandidates } from "../hooks/useCandidates";
 import { validateCPF, validatePhone, formatPhone, formatCPF, validateFile } from "../utils/validation";
+import { showNotification } from "../utils/errorHandler";
 
 export default function CandidateForm() {
   const { addCandidate } = useCandidates();
@@ -31,6 +32,7 @@ export default function CandidateForm() {
   const [cidadeSearch, setCidadeSearch] = useState("");
   const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const successMessageRef = useRef(null);
   // prévias removidas (somente Admin pode salvar/baixar imagens)
 
   // Lista de cidades do Paraná
@@ -628,7 +630,8 @@ Para exercer seus direitos ou esclarecer dúvidas sobre o tratamento de seus dad
     const success = await addCandidate(formData);
     
     if (success) {
-      setSuccessMessage("Candidatura enviada com sucesso! Você receberá um retorno em breve.");
+      const messageText = "Candidatura enviada com sucesso! Você receberá um retorno em breve.";
+      setSuccessMessage(messageText);
       setFormData({
         nome: "",
         idade: "",
@@ -645,6 +648,10 @@ Para exercer seus direitos ou esclarecer dúvidas sobre o tratamento de seus dad
       setFileStatus(createInitialFileStatus());
       setErrors({});
       setCidadeSearch("");
+      showNotification(messageText, 'success');
+      setTimeout(() => {
+        successMessageRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
       setTimeout(() => setSuccessMessage(""), 10000);
     } else {
       setSuccessMessage("");
@@ -660,12 +667,6 @@ Para exercer seus direitos ou esclarecer dúvidas sobre o tratamento de seus dad
         <h1>Formulário de Candidato</h1>
         
         <form onSubmit={handleSubmit} className="candidate-form" aria-live="polite">
-          {successMessage && (
-            <div className="form-success-banner" role="status">
-              <span className="form-success-icon" aria-hidden="true">✅</span>
-              <span>{successMessage}</span>
-            </div>
-          )}
           <div className="form-group">
             <label htmlFor="nome">Nome Completo *</label>
             <input
@@ -931,6 +932,16 @@ Para exercer seus direitos ou esclarecer dúvidas sobre o tratamento de seus dad
           <div id="submit-help" className="submit-help">
             {Object.keys(errors).length > 0 && "Corrija os erros acima para continuar"}
           </div>
+          {successMessage && (
+            <div
+              ref={successMessageRef}
+              className="form-success-banner"
+              role="status"
+            >
+              <span className="form-success-icon" aria-hidden="true">✅</span>
+              <span>{successMessage}</span>
+            </div>
+          )}
         </form>
       </div>
 
