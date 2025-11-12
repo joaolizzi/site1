@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useCandidates } from "../hooks/useCandidates";
 import { validateCPF, validatePhone, formatPhone, formatCPF, validateFile } from "../utils/validation";
-import { showNotification } from "../utils/errorHandler";
 
 export default function CandidateForm() {
   const { addCandidate } = useCandidates();
@@ -31,7 +30,6 @@ export default function CandidateForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [cidadeSearch, setCidadeSearch] = useState("");
   const [showCityDropdown, setShowCityDropdown] = useState(false);
-  const [showConfirmation, setShowConfirmation] = useState(false);
   // prévias removidas (somente Admin pode salvar/baixar imagens)
 
   // Lista de cidades do Paraná
@@ -628,6 +626,7 @@ Para exercer seus direitos ou esclarecer dúvidas sobre o tratamento de seus dad
     const success = await addCandidate(formData);
     
     if (success) {
+      window.alert('Candidatura enviada com sucesso!');
       setFormData({
         nome: "",
         idade: "",
@@ -644,14 +643,6 @@ Para exercer seus direitos ou esclarecer dúvidas sobre o tratamento de seus dad
       setFileStatus(createInitialFileStatus());
       setErrors({});
       setCidadeSearch("");
-      setShowConfirmation(true);
-      showNotification('Cadastro enviado com sucesso!', 'success');
-      alert('Candidatura enviada com sucesso!');
-      
-      // Esconder confirmação após 5 segundos
-      setTimeout(() => {
-        setShowConfirmation(false);
-      }, 5000);
     }
     
     setIsSubmitting(false);
@@ -663,15 +654,6 @@ Para exercer seus direitos ou esclarecer dúvidas sobre o tratamento de seus dad
       <div className="card">
         <h1>Formulário de Candidato</h1>
         
-        {showConfirmation && (
-          <div className="confirmation-message">
-            <div className="confirmation-content">
-              <div className="confirmation-icon">✅</div>
-              <h2>Candidatura Confirmada!</h2>
-              <p>Sua candidatura foi enviada com sucesso. Você receberá um retorno em breve.</p>
-            </div>
-          </div>
-        )}
         <form onSubmit={handleSubmit} className="candidate-form">
           <div className="form-group">
             <label htmlFor="nome">Nome Completo *</label>
