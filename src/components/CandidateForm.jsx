@@ -32,7 +32,6 @@ export default function CandidateForm() {
   const [cidadeSearch, setCidadeSearch] = useState("");
   const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [showFullScreenSuccess, setShowFullScreenSuccess] = useState(false);
   // prévias removidas (somente Admin pode salvar/baixar imagens)
 
   // Lista de cidades do Paraná
@@ -647,6 +646,7 @@ Para exercer seus direitos ou esclarecer dúvidas sobre o tratamento de seus dad
       setCidadeSearch("");
       setShowConfirmation(true);
       showNotification('Cadastro enviado com sucesso!', 'success');
+      alert('Candidatura enviada com sucesso!');
       
       // Esconder confirmação após 5 segundos
       setTimeout(() => {
@@ -931,10 +931,6 @@ Para exercer seus direitos ou esclarecer dúvidas sobre o tratamento de seus dad
             type="submit" 
             disabled={isSubmitting || Object.keys(errors).length > 0}
             className="submit-button"
-            onClick={() => {
-              setShowFullScreenSuccess(true);
-              setTimeout(() => setShowFullScreenSuccess(false), 20000);
-            }}
             aria-describedby="submit-help"
           >
             {isSubmitting ? "Enviando..." : "Enviar Candidatura"}
@@ -946,14 +942,6 @@ Para exercer seus direitos ou esclarecer dúvidas sobre o tratamento de seus dad
       </div>
 
 
-      {showFullScreenSuccess && (
-        <div className="full-screen-success" role="status" aria-live="polite">
-          <div className="full-screen-success-content">
-            <div className="full-screen-success-icon">✅</div>
-            <h2>CANDIDATURA ENVIADA</h2>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
