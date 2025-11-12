@@ -104,16 +104,22 @@ export const useCandidates = () => {
       }
 
       // Backup automático
-      await setDoc(doc(db, 'backup', 'candidates', candidateId), {
-        nome: candidateData.nome,
-        idade: parseInt(candidateData.idade),
-        telefone: candidateData.telefone,
-        cpf: candidateData.cpf,
-        ...documentUrls,
-        status: 'Backlog',
-        createdAt: serverTimestamp(),
-        backupAt: serverTimestamp()
-      });
+      try {
+        const backupRef = doc(db, 'candidates_backup', candidateId);
+        await setDoc(backupRef, {
+          nome: candidateData.nome,
+          idade: parseInt(candidateData.idade),
+          telefone: candidateData.telefone,
+          cpf: candidateData.cpf,
+          cidade: candidateData.cidade,
+          ...documentUrls,
+          status: 'Backlog',
+          createdAt: serverTimestamp(),
+          backupAt: serverTimestamp()
+        });
+      } catch (backupError) {
+        console.warn('Erro ao salvar backup (não impede o cadastro):', backupError);
+      }
 
       showNotification('Trabalhador cadastrado com sucesso!', 'success');
       return true;
@@ -170,12 +176,17 @@ export const useCandidates = () => {
       }
 
       // Atualizar backup
-      await setDoc(doc(db, 'backup', 'candidates', candidateId), {
-        ...candidate,
-        status: status,
-        updatedAt: serverTimestamp(),
-        backupAt: serverTimestamp()
-      }, { merge: true });
+      try {
+        const backupRef = doc(db, 'candidates_backup', candidateId);
+        await setDoc(backupRef, {
+          ...candidate,
+          status: status,
+          updatedAt: serverTimestamp(),
+          backupAt: serverTimestamp()
+        }, { merge: true });
+      } catch (backupError) {
+        console.warn('Erro ao atualizar backup (não impede a operação):', backupError);
+      }
 
       showNotification(`Status atualizado para ${status}`, 'success');
       return true;
@@ -219,7 +230,11 @@ export const useCandidates = () => {
       await deleteDoc(doc(db, 'candidates', candidateId));
 
       // Deletar do backup
-      await deleteDoc(doc(db, 'backup', 'candidates', candidateId));
+      try {
+        await deleteDoc(doc(db, 'candidates_backup', candidateId));
+      } catch (backupError) {
+        console.warn('Erro ao remover backup (ignorado):', backupError);
+      }
 
       // Log da atividade (transparente para o usuário)
       try {
